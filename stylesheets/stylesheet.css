@@ -44,7 +44,7 @@ a {
     font-size: 0.9rem; } }
 
 @media screen and (max-width: 42em) {
-  .btn {
+   .btn {
     display: block;
     width: 100%;
     padding: 0.75rem;
@@ -90,7 +90,7 @@ a {
 .project-tagline {
   margin-bottom: 2rem;
   font-weight: normal;
-  opacity: 0.7; }
+  opacity: 0.9; }
 
 @media screen and (min-width: 64em) {
   .project-tagline {
@@ -176,15 +176,16 @@ a {
   .main-content blockquote > :last-child {
     margin-bottom: 0; }
 .main-content table {
+  table-layout: fixed;
   display: block;
   width: 100%;
   overflow: auto;
   word-break: normal;
-  word-break: keep-all; }
+  word-break: keep-all;}
   .main-content table th {
     font-weight: bold; }
   .main-content table th, .main-content table td {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.5rem;
     border: 1px solid #e9ebec; }
 .main-content dl {
   padding: 0; }
