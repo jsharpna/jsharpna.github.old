@@ -182,7 +182,9 @@ sub {
  */
 
 img {
-  border: 0;
+    border: 0;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 /**
@@ -442,30 +444,11 @@ th {
 .group:after { content:""; display:table; }
 .group:after { clear:both;}
 .group { zoom:1; /* For IE 6/7 */ }
-/*  GRID OF THREE  */
-.span_3_of_3 { width: 100%; }
-.span_2_of_3 { width: 66.13%; }
-.span_1_of_3 { width: 32.26%; }
 
-/*  GO FULL WIDTH BELOW 480 PIXELS */
-@media only screen and (max-width: 480px) {
-	.col {  margin: 1% 0 1% 0%; }
-	.span_3_of_3, .span_2_of_3, .span_1_of_3 { width: 100%; }
+/*  GRID OF TWO  */
+.span_2_left {
+	width: 64.2%;
 }
-
-
-.rightbar-wrapper {
-  margin-right: 330px;
-}
-.rightbar-content {
-  float: left;
-  width: 100%;
-}
-.rightbar-sidebar {
-  float: right;
-  width: 330px;
-  margin-right: -330px;
-}
-.cleared {
-  clear: both;
+.span_2_right {
+	width: 34.2%;
 }
