@@ -452,3 +452,20 @@ th {
 	.col {  margin: 1% 0 1% 0%; }
 	.span_3_of_3, .span_2_of_3, .span_1_of_3 { width: 100%; }
 }
+
+
+.rightbar-wrapper {
+  margin-right: 330px;
+}
+.rightbar-content {
+  float: left;
+  width: 100%;
+}
+.rightbar-sidebar {
+  float: right;
+  width: 330px;
+  margin-right: -330px;
+}
+.cleared {
+  clear: both;
+}

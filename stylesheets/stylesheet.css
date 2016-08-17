@@ -165,7 +165,8 @@ a {
   .main-content pre code:before, .main-content pre code:after, .main-content pre tt:before, .main-content pre tt:after {
     content: normal; }
 .main-content ul, .main-content ol {
-  margin-top: 0; }
+    margin-top: 0;
+    list-style-type: none; }
 .main-content blockquote {
   padding: 0 1rem;
   margin-left: 0;
@@ -177,7 +178,6 @@ a {
     margin-bottom: 0; }
 .main-content table {
   table-layout: fixed;
-  display: block;
   width: 100%;
   overflow: auto;
   word-break: normal;
