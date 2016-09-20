@@ -177,7 +177,8 @@ a {
   .main-content blockquote > :last-child {
     margin-bottom: 0; }
 .main-content table {
-  table-layout: fixed;
+    table-layout: fixed;
+    display: block;
   width: 100%;
   overflow: auto;
   word-break: normal;
@@ -244,3 +245,10 @@ a {
 @media screen and (max-width: 42em) {
   .site-footer {
     font-size: 0.9rem; } }
+
+.youtube {
+    margin: auto;
+    width: 70%;
+    padding: 10px;
+}
+
