@@ -453,5 +453,10 @@ th {
 	width: 34.2%;
 }
 .span_half {
-	width: 49%;
+    width: 49%;
+}
+
+.pubsec {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
