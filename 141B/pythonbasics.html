@@ -35,6 +35,7 @@
       </p>
 
       <h3>Python Syntax</h3>
+      <p>
       There are many python basics resources online, here is a short list:
       <ul>
 	<li><a href="http://heather.cs.ucdavis.edu/~matloff/python.html">Norm Matloff's python material</a></li>
@@ -42,66 +43,90 @@
 	<li><a href="https://developers.google.com/edu/python/introduction">Google's intro to Python</a></li>
 	<li><a href="http://anh.cs.luc.edu/331/notes/PythonBasics.pdf">These course notes, S.R. Doty</a></li>
       </ul>
-
-      <h4>Checkpoint 1: Go through the Google course's <a href="https://developers.google.com/edu/python/introduction">introduction section (single page)</a>.</h4>
-      
-      <p><b>Variable Type</b> determines how the variable is stored and manipulated.
-	Try the following commands in ipython:
-	<ul>
-	  <li><code>1 + 4</code></li>
-	  <li><code>['a','b'] + ['c']</code></li>
-	  <li><code>'ab' + 'c'</code></li>
-	  <li><code>True + False</code></li>
-	  <li><code>{'141A':1, '141B': 2} + {'141C': 3}</code></li>
-	</ul>
-	So + does different things based on the type.
-	You can see what the type of these objects are with <code>type([variable])</code>.
-	For integers + is addition, for lists and strings + concatenates, for boolean + converts them into integers first (1 or 0) and then adds, and for dictionaries + is undefined.
-	In fact, you can make your own variable types (called classes) and redefine + for that class.
-	Doing this is an example of object oriented programming, and redefining + is an example of overloading operators.
       </p>
+      
+      <h4>Checkpoint 1: Go through the Google course's <a href="https://developers.google.com/edu/python/introduction">introduction section (single page)</a>.</h4>
 
-      <div class="youtube">
+       <div class="youtube">
 	<iframe width="560" height="315" src="https://www.youtube.com/embed/fsmBWaULGkY" frameborder="0" allowfullscreen></iframe>
 	<b>Computing your age:</b> A little example of writing modular code and if statements.  Pardon my lapse in the middle, I got a bit confused for no reason <a href="code/birthday.py">(code)</a>
       </div>
 
       <h4>Checkpoint 2: Go through the Google course sections: <a href="https://developers.google.com/edu/python/strings">Strings, Lists, Sorting (read list comprehensions), Dicts and Files</a>.  While you read this you should have ipython open and try some of the test code there.</h4>
 
+      <h3>Elements of Style</h3>
+      <p>In order to write nice code, you should do a few things. (This was partially derived from <a href="https://media.readthedocs.org/pdf/python-guide/latest/python-guide.pdf">the python guide</a>)
+	<ul>
+	  <li>Modularize your code with def</li>
+	  <li>Make somewhat informative variable names (don't just use a,b,c,...)</li>
+	  <li>Write comments (or markdown in Jupyter) explaining what you're doing</li>
+	  <li>Break complicated things into multiple lines</li>
+	</ul>
+	There are many python idioms (coding practices) that are pythonic.
+	One such thing is tuple unpacking, where you assign values to multiple variables:
+	<code>i,j = (1,2)</code>.  Here we assigned i=1 and j=2 in one line.
+	Another is list comprehensions and generators.
+	For example, if you want to create a list of the first 100 square numbers then you could use a for loop:
+<pre><code>squares = []
+for i in range(100):
+    squares.append(i**2)</code></pre>
+Or you could do it in one line with <code>squares = [i**2 for i in range(100)]</code>.
+Here a new list was created with a new element for each i in the range(100) object (recall that range(100) returns a list of increasing integers from 1 to 100).
+There are many other idioms that I hope you will pick up along the way.
+Watch the following examples.
+      
       <div class="youtube">
 	<iframe width="560" height="315" src="https://www.youtube.com/embed/2gAGNyv9KlA" frameborder="0" allowfullscreen></iframe>
 	<b>Strings to Ages:</b> Import custom module, working with strings, list comprehensions <a href="code/test_birthday.py">(code)</a>
       </div>
-      
-      <p>	
-	Why do we have a dictionary and a list in Python.  If you want to map an integer index to a list of values, then a list is great.
-	With a list x, you can look up <code>x[i]</code>, and it is extremely fast.
-	When the index (or key) is not a positive integer with consecutive entries then the list is not enough.
-	For this we use a dictionary, where the key can be strings, integers, and floats.
-	The following example shows the usefulness of dictionaries.
-	If you want to see how long an expression takes you can use the ipython magic function <code>%time</code>.
-      </p>
 
       <div class="youtube">
-	<iframe width="560" height="315" src="https://www.youtube.com/embed/4zJJX5Tbwxo" frameborder="0" allowfullscreen></iframe>
-	<b>Data Structures:</b> A little bit about data structures, correction: I said that list lookup takes linear time, when I meant to say constant time (which I haven't defined yet).
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/Es4NWUB7idM" frameborder="0" allowfullscreen></iframe>
+	<b>Longest ordered word:</b> a friend asked what is the longest word in alphabetical order, luckily we have python.  I was freestyling this one and lost the code.</a>
       </div>
 
-      <div class="youtube">
-	<iframe width="560" height="315" src="https://www.youtube.com/embed/QjD4ZDMGOuM" frameborder="0" allowfullscreen></iframe>
-	<b>Testing these algorithms:</b> we compare list.index, dictionaries, and sorted lists <a href="code/datastruct.py">(code)</a>
-      </div>
+      <h3>Variable Scope</h3>
+      Suppose that we have many functions that we are using, many modules, many loops.
+      Each of these will use dummy variable, and inevitably variable names will overlap.
+      For example, suppose at some point in my code I set <code>i=1</code> and then much later I forgot this and used <code>i = j+1</code> as a temporary variable for some reason. 
+      Then of course, I've lost my original value, which is a problem.
 
-      <h4>Checkpoint 3: by the end of this lesson, you should make sure you are familiar with the following...
+      Consider the following:
+
+<pre><code>def addone(j):
+    i = j+1
+    return i
+
+i = 1
+j = addone(i)
+print i
+</code></pre>
+If there was no such thing as variable scope, then the result would be 2, but because of variable scope, 1 is printed.
+What happens is that your code has a namespace, which associates the variable name with objects in memory.
+But the code that you are working on now only has access to it's namespace and the namespace of imported modules and the built-in namespace.
+Functions for example create a local namespace which you do not have access to by default.
+This actually is a way to make your coding managable, especially if you are like me, in that you have a very limited memory.
+The scope of the variable refers to where in the code it is well defined, so the scope of i in addone is just that function, while i outside has global scope.
+
+Global scope means that it can be accessed anywhere in the code.
+So for example the following code works.
+<pre><code>def printi():
+    print i
+
+i = 10
+printi()</pre></code>
+You can make a variable defined in a function with the <code>global</code> command, but it is a bad practice to rely on this, so let's not dwell on it.
+
+      <h4>Checkpoint: by the end of this lesson, you should make sure you are familiar with the following...
 	<ul>
 	  <li>Basic python types: int, string, float, list, tuple, dict</li>
 	  <li>Methods: ex. list.append(), string.split(), len(list)</li>
 	  <li>Control & flow: if, then, else, for, while</li>
 	  <li>List comprehensions and generator expressions</li>
-	  <li>Reading from files</li>
+	  <li>Variable scope</li>
 	</ul>
       </h4>
-      
+
      <footer class="site-footer">
 	Copyright James Sharpnack &copy; 2016
      </footer>
