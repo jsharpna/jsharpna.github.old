@@ -3,7 +3,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>141B: Matplotlib</title>
+    <title>141B: Plotting</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -13,37 +13,59 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">141B: Lesson 6</h1>
-      <h2 class="project-tagline">Matplotlib</h2>
+      <h2 class="project-tagline">Plotting</h2>
     </section>
 
     <section class="main-content">
-<h3>A plot!</h3>
+<h3>Matplotlib</h3>
 
 So we have all seen plotting in R, matlab, excel, etc.
-Matplotlib is the premier python package, created by the late John Hunter, 
+Matplotlib is the premier python package for plotting, created by the late John Hunter, and it is compatible with Numpy and Pandas.
+It has extensive 2D plotting functions, some 3D plotting, and extensions for geographical data (which we will go over later in the class).
+The common 2D plots that we commonly make are <code>plot, scatter, hist, bar, pie, boxplot, contours</code>.
+You can also draw basic objects on the plot, like lines, polygons, etc. but we won't be going over this in this lesson.
 
-The dataframe is a data type that acts like a table (think of excel tables).
-The idea is that there are fields (or columns) and then there are different records that have those fields.
-Think of individuals that have attributes and then a dataset of many such individuals.
-Matlab is built around the matrix type, for which we use numpy.
-R is built around the dataframe type, and for this we have pandas.
-There are several advantages that pandas gives us that we cannot get from numpy and the array type.
-You should read the more complete list <a href="http://pandas.pydata.org/pandas-docs/stable/">here</a>, but here are what I the main advantages to pandas.
+<h3>Checkpoint: Look through the <a href="http://matplotlib.org/gallery.html">gallery of examples</a> and descend into those that you find interesting.
+Also, look through the <a href="http://matplotlib.org/api/pyplot_summary.html">list of methods</a> in pyplot to see what is available.</h3>
 
-<ul>
-  <li>Great I/O (input/output), for reading files of different extensions, reading from sql database systems, and writing the dataframes</li>
-  <li>Fancy slicing and subsetting</li>
-  <li>SQl-like features such as grouping, indexing, and joining.</li>
-  <li>Nice handling of missingness</li> 
-</ul>
+Follow along with the following example with the <a href="code/Matplotlib.ipynb">notebook</a>.
 
-<a href="http://pandas.pydata.org/pandas-docs/stable/missing_data.html">Missing data</a>, <a href="http://pandas.pydata.org/pandas-docs/stable/indexing.html">Indexing and slicing</a>, <a href="http://pandas.pydata.org/pandas-docs/stable/basics.html">Miscellaneous Pandas functionality</a>
+      <div class="youtube">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C56D4OG3JHk" frameborder="0" allowfullscreen></iframe>
+	<b>Matplotlib: plot, errorbar, stackplot</b>
+      </div>
+      
+      <h3>Checkpoint: look at the arguments for the following commands in pyplot:</h3>
+      <ul>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot">plot</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.errorbar">errorbar</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.stackplot">stackplot</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.scatter">scatter</a></li>
+	</ul>
+
+      <div class="youtube">
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/3bOr7_FsxQ4" frameborder="0" allowfullscreen></iframe>
+	<b>Matplotlib: scatter, hist</b>
+      </div>
+
+      <h3>Checkpoint: look at the arguments for the following commands in pyplot:</h3>
+      <ul>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.hist">hist</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.bar">bar</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pie">pie</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.boxplot">boxplot</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.violinplot">violinplot</a></li>
+	<li><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplots">subplots</a></li>
+      </ul>
 
       <div class="youtube">
 	<iframe width="560" height="315" src="https://www.youtube.com/embed/oCF40pmKC_c" frameborder="0" allowfullscreen></iframe>
-	<b>Matrix operations</b>
+	<b>Matplotlib: bar, pie, boxplot, violinplot, subplots
+	</b>
       </div>
 
+      
+      
      <footer class="site-footer">
 	Copyright James Sharpnack &copy; 2016
      </footer>
