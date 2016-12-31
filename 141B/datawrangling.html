@@ -88,27 +88,11 @@ You should read the more complete list <a href="http://pandas.pydata.org/pandas-
 	<b>Initializing DataFrames</b>
       </div>
 
-<h2>Indexing and Timeseries</h2>      
-
-<p>
-We have talked abstractly about indexing, but it is fundamental to Pandas, so we should probably look at it in greater detail.
-One common paradym is indexing by a datetime.
-The index does not necessarily have to give you a unique row, and so when you select a datetime using <code>loc</code> then it'll return multiple records.
-The advantage of an index is that it makes merging, combining, and joinging tables make sense.
-For example, if you want to add the number of passengers that fly out of two airports within each month but summing two dataframes corresponding to the airports, then this can make that easy.
-In the next lesson we will see how you can join, query, etc. and for that indexing will be critical.
-</p>
-
-<h3>Checkpoint: Skim the <a href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html">section on timeseries</a> and <a href="http://pandas.pydata.org/pandas-docs/stable/indexing.html">section on indexing</a>. </h3>
-
-      <div class="youtube">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/RnrZco22y3c" frameborder="0" allowfullscreen></iframe>
-	<b>Indexing DataFrames</b>
-      </div>
 
 <h2>Plotting with Pandas</h2>
 
 <p>
+  Skip over the section about indexing in the notebook, we will get to that next lesson.
   All of what we learned about matplotlib still applies to pandas objects.  You can pass Series to <code>plt.plot, plt.hist, ...</code> but there is a simpler way to do it with Pandas.
   You can use the <code>DataFrame.plot</code> method to do things in a bit more parsimonious way.
 </p>
