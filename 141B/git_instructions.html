@@ -38,19 +38,48 @@
       
       <h4>Checkpoint 1: Complete the <a href="https://try.github.io/">GitHub git tutorial</a>, and download git client for <a href="https://desktop.github.com/">Mac, Windows</a>, or install on linux (google git install for your linux distribution)</h4>
       
-      <h3>Setting up your repositories</h3>
+      <h3>Setting up your website repo</h3>
 
-      <p>First you need an account on <a href="https://github.com">GitHub</a>, so create one.  You should look into getting the <a href="https://education.github.com/pack">free student developer pack</a>  Let's begin by setting up your 141B assignment repository on GitHub.  Once you are logged it, click on "new repository" and then you create a repo under your username named "141B" that is private.<br>
-	<img src="media/141B_repo_create.png"></img><br>
-	Then initialize the repository according to the instructions, or using the GitHub desktop app.
-	At the 141B repo click on Settings and Collaborators, then add jsharpna and lixyak.</p>
-
-
-      <h4>Checkpoint 2: In your 141B repo, add a file titled "info.txt" with your full name, major, and what you want to get out of this class (separate each of these by a new line).  Git add, commit with a message, and push.</h4>
-
-      <p>Now, you should set up your personal site, which will serve as your 'data science portfolio'.  So a browser like Firefox is just a program that can interpret certain file formats, like html.  When you point your browser to a folder, like https://github.com/ it looks for a file called index.html there, interprets, and displays it.  Every other file (like this one that you are reading now) need to be pointed to by name on your browser.  We'll start by initializing the repository with the GitHub automatic page generator:</p> 
+      <p>First you need an account on <a href="https://github.com">GitHub</a>, so create one.  You should look into getting the <a href="https://education.github.com/pack">free student developer pack</a>.
+      Now, you should set up your personal site, which will serve as your 'data science portfolio'.  So a browser like Firefox is just a program that can interpret certain file formats, like html.  When you point your browser to a folder, like https://github.com/ it looks for a file called index.html there, interprets, and displays it.  Every other file (like this one that you are reading now) need to be pointed to by name on your browser.  We'll start by initializing the repository with the GitHub automatic page generator:</p> 
 
       <h4>Checkpoint 3: Go to <a href="https://pages.github.com/">GitHub pages</a> and follow the instructions to initialize the special website repository.  Then use the automatic page generator <a href="https://help.github.com/articles/creating-pages-with-the-automatic-generator/">here</a> and choose your favorite template.  You should end with a boilerplate index.html that you can get to via [username].github.io.</h4>
+
+      <h3>HTML and CSS</h3>
+
+      <p>
+	There are lots of html and css tutorials online, for example <a href="https://www.codecademy.com/learn/web">codecademy</a>.
+	HTML is short for hypertext markup language, which means that it is not a sequential programming language, like Python, but rather a markup language.
+	This means that it is used for modifying text with hidden tags.
+	Other examples of markup languages are TeX and XML.
+	Your browser reads the html file, with the tags and everything and turns it into text with different fonts, colors, structure, etc.
+      </p>
+      <p>
+	We are going to learn a minimal amount of html.
+	Enough that you can make and edit your website, but not so much that you will be a web developer.
+	This is usually sufficient since typically people make their site by using public sites and modifying it to their taste.
+	We will also consider html files to be a source of data, so it is good to understand the basics now.
+      The first thing you should do is to right click on this page and to click view source.
+      You should see a bunch of tags that look like &lt;TAG NAME&gt;STUFF BETWEEN TAGS&lt;\TAG NAME&gt;, which will operate on the text between the tags.
+      For example, you should see that a paragraph is surrounded by &lt;p&gt;&lt;\p&gt; 
+      </p>
+
+      <p>
+	There are several such tags to bold &lt;strong&gt; text, create hyperlinks &lt;a href="site.html"&gt;, create headers &lt;h1&gt;, &lt;h2&gt;, create unordered lists &lt;ul&gt;, tables &lt;table&gt;, newline &lt;br&gt;, display image &lt;img&gt; (see the tables <a href="https://www.washington.edu/accesscomputing/webd2/student/unit2/common_tags.html">in this course website</a>).
+	The html file has two main sections, the header and the body.
+	The header specifies metadata and scripts, and the body has the main content.
+	If you rely on just these tags to make a website then you typically get something that looks <a href="http://www.conficturaindustries.com/">like it's from the 1990s</a>.
+	Instead, people use CSS to define how different tags work, in separate stylesheet files, and then use the customized tags in the html.
+	For example, if you look at the header of this html file, then you see the line
+	<verbatim><pre>&lt;link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen"&gt;</pre></verbatim>
+	and then if you go to <a href="../stylesheets/stylesheet.css">the css file</a> and search for page-header, you find lines like this:
+<verbatim><pre>.page-header {
+  padding: 2rem 6rem; }</pre></verbatim>
+This indicates that the page header has a certain amount of padding around the text.  There are tons of such properties that you can modify.
+For the purposes of this course, you should just learn the properties that you need when you need them (google works well).
+</p>
+	
+<h4>Checkpoint: Download this html file and modify things.  If it doesn't look the same, then it's probably because you don't have the css file.  You should download those too (you should be able to figure out how to), and then change the link tags so that the relative pathname points to the css file.  Modify properties of the tags in the css until you feel like you understand the basics of what is going on.</h4>
       
       <footer class="site-footer">
 	Copyright James Sharpnack &copy; 2016
