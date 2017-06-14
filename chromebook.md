@@ -51,8 +51,8 @@ I partially followed the [crouton installation instructions](https://github.com/
 - Upgrade crouton with xiwi, `sudo sh ~/Downloads/crouton -u -t xiwi`,  which makes it so that you can use the chrome os clipboard.
 - Now I can enter into chroot with `sudo enter-chroot` and I am now in ubuntu.
 
-Linux Installations
+Linux Installations (Ongoing)
 --------------
-- I installed emacs with `sudo apt-get install emacs` and `sudo apt-get install elpa-markdown-mode` (I will probably also install python-mode).
-- I installed julia with `sudo apt-get install julia`
+- I installed emacs with `sudo apt-get install emacs` and `sudo apt-get install elpa-markdown-mode` (I will probably also install python-mode).  I had trouble installing emacs with chromebrew, which is a well documented bug.
+- I installed julia with `sudo apt-get install julia`.
 
