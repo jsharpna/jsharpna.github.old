@@ -1,0 +1,7 @@
+Image Data and Computer Vision
+=================================
+
+- fft, convolution, image compression
+- convolutional nets
+- tensorflow
+- optical character recognition, MNIST

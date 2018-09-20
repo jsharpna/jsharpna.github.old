@@ -1,0 +1,6 @@
+Distributed Statistical Learning
+===================================
+
+- mapreduce computation of statistics
+- hadoop, HDFS
+- distributed ML

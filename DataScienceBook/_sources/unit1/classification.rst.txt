@@ -1,0 +1,6 @@
+Classification
+==============
+
+- Evaluating classifiers
+- sklearn
+- Classes, caching, learning machine structure

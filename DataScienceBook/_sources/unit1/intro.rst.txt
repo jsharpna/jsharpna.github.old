@@ -1,0 +1,329 @@
+Introduction
+************
+
+The Data Scientist
+------------------------
+ 
+Congratulations, you were selected by fate to witness the data science revolution.  Like the technological revolutions that came before (e.g., agricultural, industrial, telecommunications), it will have beneficial, destructive, awesome, dreadful, and silly consequences.  At least, this is the popular narrative portrayed in the media, by companies trying to find investors, and by professors trying to gain interest in their courses.  It is commonly reported that governments and corporations are racing to develop artificial intelligence and machine learning, while anticipating that such measures will determine the next winners in their colossal power struggles.  Harnessing these sophisticated tools requires teams of data scientists managing, curating, processing data; visualizing data and interpreting statistics; designing learning machines and evaluating their performance; and inventing new artificial intelligence algorithms.  When faced with this prospect, most of us---those of us that are not already working as or studying to be data scientists---are left over-awed, intimidated, and often uninspired.  We endow data science with these (overtly masculine) superlatives despite the fact that it is a poorly understood field still in its infancy.  It will take an entire community of scientists to understand its subtle principles and practices.  
+
+One popular misconception is that data science is reserved for only elite computer scientists and mathematicians.  How can I make it in this field if I did not write my first computer program at 8, learn calculus at 14, and survive the cauldron of an elite university.  I would posit an alternative hypothesis: there are no super-geniuses, just people that have a combination of confidence, ability, and opportunity.  If the data science revolution is truly to be a technological revolution, spanning multiple generations and spawning new industries, it will have to be accessible to a broad swath of skilled workers.  As we will see in this book, data science requires probabilistic reasoning, an understanding of basic Computer Science and Statistics, a good grasp of the technologies out there, and lots of common sense.  
+
+Another popular misconception is that machine learning is the search for a master algorithm that will solve all data science problems.  (Machine learning is the subfield of data science concerning algorithms that improve their performance by processing data.)  The implication is that all "lower level" data scientists will one day suddenly be made obsolete.  This disheartening notion has no historical basis.  In the 1990's, machine learning research was dominated by algorithms such as neural networks and support vector machines which are used to classify items based on features from labeled data.  In 1998, the founders of Google, Larry Page and Sergey Brin, developed the PageRank algorithm to rank websites based on popularity and connectedness within the World Wide Web (WWW).  This became the founding technology for the Google search engine, and it has nothing to do with support vector machines and neural networks.  It is not even a classification algorithm.  The PageRank algorithm is based on a thought experiment where you imagine performing a random walk in the WWW, hopping along hyperlinks to see how frequently you land at each webpage.  While they were not alone in thinking of this idea---Jon Kleinberg introduced the related HITS algorithm in the same year---PageRank was developed independently of the bulk of research in machine learning because it does not fit into the classification framework.  As of August 2018, Google's parent company, Alphabet Inc. has a market cap of 848 Billion USD.
+
+Most machine learning methods are tailored to very specific data types and tasks, and often the challenge is to understand what tools are needed when.  In my machine learning class, often I find that after teaching my students about support vector machines, random forests, neural networks, and boosted decision trees, we are stymied by missingness in real datasets.  Missing data is just one example of a common occurrence that we did not anticipate when we designed most machine learning algorithms.  The topic of missing data alone could consume a Ph.D. thesis or even a career.  The case of missing data is more evidence that in reality a good data scientist can think clearly about a variety of issues and is not just focused on finding the one learning algorithm to rule them all.
+
+To see this alternative narrative play out we only need to look at the state of machine learning research as it actually is.  If we look at the subject areas for the 2018 Proceedings of the Neural Information and Processing Systems (a top machine learning publication) we see that they are primarily delineated by the data modality or machine learning task.  For example, active learning, bandit algorithms, collaborative filtering, online learning, and structured prediction are all different tasks or data types in machine learning.  We are running into more data science problems every day, and for every new algorithm that improves on a pre-existing method, there is another new algorithm that solves a heretofore unsolved problem.  So take heart, there is room for you in this exciting new field.
+
+
+Why Python?
+-----------
+
+Python was developed in 1991 by Guido van Rossum because the popular procedural languages of the time (perl, C, Fortran, etc.) were deficient for many common tasks.  C (Dennis Ritchie, 1973) is great for writing fast optimized code, but it suffers from flexibility because of the need to declare variables, and the thin layer of abstraction (you are a bit closer to the machine).  Perl (Larry Wall, 1987) is great for writing scripts that interacted with unix, processed strings, and being able to do this quickly with minimal effort.  One common complaint of Perl is that it was very easy to write nearly unreadable code in Perl (aka line garbage), and it is filled with heuristics.  Python is like Perl in that there is sufficient abstraction to write code without thinking too much about memory allocation and type compatibility, but unlike Perl, it emphasizes readibility.  Python and Perl are both interpreted languages, meaning that they come with interpreters that will run code line by line as you execute them, while C is compiled, meaning that you write code and then a program, called a compiler, converts it into machine code (code that the CPU can directly read).
+
+For these reasons, Python's popularity has grown, so that now it is the 2nd most popular language after Java.  One advantage of this is that there exist tons of great packages for Python, such as numpy, scipy, matplotlib, etc.  That is why we use Python for data science.  Matlab and C++ are going to be typically faster, but it is often wiser to go out and find a package that already implements what you want to do, so that you don't have to code everything from scratch (and it will probably be a much faster implementation).  While most of this course will be about using different packages in Python, you need to learn the basic Python syntax, because inevitably you will need to program basic things by hand.
+Another fundamental programming language for the data scientist is R, which has more extensive statistical packages than Python.
+R is not as universally used as Python though, and for some things, such as working with unstructured data and text, it is a bit cumbersome.
+Ideally, you will be familiar with both languages and will use whichever is more well suited for the task at hand.
+
+Installation and Workflow
+----------------------------
+
+Throughout this book, it will be helpful to have access to a unix shell such as bash.
+Often this is called the terminal, and the basic idea is that you can enter in commands such as 
+
+.. code-block:: bash
+
+ $ whois google.com
+
+and it will run a program, instead of having to click on it through your windows manager and graphical user interfaces (gui).
+The command line gives you greater control and more specificity when working with your computer.
+The command above, for example, lets you find out that google.com was registered on 15 Sept 1997 in California by Google LLC.
+In Mac OS X or Linux, you can open up the terminal and test this out by typing ``echo $PATH``.
+In windows however you will either need to install a bash shell or use the Ubuntu on Windows subsystem.
+For windows, I recommend just installing Anaconda (see below) and using the Anaconda prompt if you need a shell.
+
+Different systems will have different commands available.
+For example, ``whois`` was not installed by default on my system and I had to install it first.
+On the Linux distribution Ubuntu, I can use the apt package manager as in
+
+.. code-block:: bash
+
+ $ apt install whois
+
+but in Mac OS X, you should use the ``brew`` package manager.
+As in all other things, google.com is your friend, if you run into errors or don't remember specific commands, just google it and descend down whatever rabbit-hole seems promising.
+
+CPython install
+^^^^^^^^^^^^^^^
+
+When we talk about Python, we are talking about the Python language, but the interpreter is what actually executes the code.
+CPython is the most common interpreter, and it is called CPython because it is implemented in C. 
+Throughout this book, we will be using Python 3, which differs significantly enough from Python 2 that some of the code presented here will not work with the Python 2 interpreter.
+There are likely many ways to install the Python 3 CPython interpreter on your system.
+If you want to minimize the amount of time that you spend on installation issues---if you are a student in one of my classes and you are new to installing Python packages---then I recommend using Anaconda instead of these method because it is easier to maintain the packages and you can install R, jupyter, ipython, and spyder very easily.
+Nevertheless, in some instances you may want to install Python directly, so here we go.
+**In case you missed it only do the following if you want to have greater control over you own installation, and need to build some things from source.  Otherwise, skip to the Anaconda section.**
+
+**Ubuntu:** In the Linux distribution Ubuntu, you can install Python 3 on your system with ``$ apt install python3`` or installation through the source.
+This may not be necessary for your installation because python3 comes installed on Ubuntu by default.
+For other Linux distributions, you should first try using your package manager.
+You will need to install ``pip``, ``setuptools``, and ``virtualenv``.
+To install pip and setuptools (Python package installers)
+:: 
+
+ $ wget https://bootstrap.pypa.io/get-pip.py
+ $ sudo python3 get-pip.py
+
+This will install both on your machine, and now the command line tools ``pip3`` and ``easy_install`` should be available.
+Next, you will need to install virtualenv which lets you isolate Python environments.
+To install run ``$ pip3 install --user virtualenv``.
+Skip to the note on ``$PATH`` at the end of the Anaconda section.
+
+**Mac OS X:** The version of Python that comes with Mac OS X is a specific Mac build but it is preferred that you do your own install.
+If you do not already have it you will need to install Homebrew, which is a package manager for Mac OS X.
+In the terminal application run the following,
+::
+
+ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+If you have trouble with the brew, visit the `Homebrew webpage <https://brew.sh/>`_ .
+Now you should be able to run the following: ``$ brew install python3``, which will install Python3.
+Homebrew should have installed pip and setuptools for you, so proceed to installing virtualenv with ``$ pip3 install virtualenv``.
+Skip to the note on ``$PATH`` at the end of the Anaconda section.
+
+**Windows:** Use Anaconda.
+
+On all these systems you will want to install the scipy stack via the following:
+::
+
+ pip3 install --user numpy scipy matplotlib ipython jupyter pandas
+
+**Wheels:** Generally, you will use ``$ python3`` and ``$ pip3`` for your interpreter and package installer.  
+Many Python packages, such as SciPy, use C extensions.
+As of the latest version of pip one could install scipy with the command ``$pip3 install scipy``, but you may encounter build issues in which case you can install via wheels, which allow pip to install precompiled packages.
+This is especially common in Windows, and you can find your wheel and some instructions here: `Unofficial Windows Binaries for Python Extension Packages <https://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_ .
+
+Anaconda
+^^^^^^^^
+
+Anaconda is a Python distribution that comes with its own Package installer ``conda``.  
+To install you should go to the `anaconda.org download page <https://www.anaconda.com/download/>`_ and choose your operating system.
+It also comes with the scipy stack, jupyter, ipython, and spyder.
+You can also use it to install R through the r-essentials package, and this will allow you to run an R kernel in jupyter.
+Julia is another language that you may be interested in, with the new Julia 1.0 version you may find that you can write much faster scripts if you are coding something from scratch.
+You can also install julia with conda.
+
+While there is a Desktop gui for Anaconda, I find that you have better control from command line.
+If you are a Linux or Mac user the terminal is sufficient, but for Windows you probably do not have a shell that you use often.
+In Windows, Anaconda ships with a bash shell from which you can run all the necessary commands.
+Just search for the anaconda prompt and then pin it to your desktop.
+From here you should be able to run the commands ``$ python``, ``$ ipython``, ``$ jupyter notebook``.
+In fact, ``$ ssh`` is also available here, so it should also work for remote computing.
+
+You may want to start with updating conda: ``$ conda update conda``. 
+In order to see what packages you have installed in conda run ``$ conda list`` and then you should see a list of packages with their versions, for example,
+
+.. code:: bash
+   
+ numpy 1.14.0 py36h4a99626_1
+
+which tells us that numpy is installed at version 1.14.0.
+You should see numpy, scipy, matplotlib, ipython, jupyter, pandas.  
+If you do not then install them with ``$ conda install PACKAGENAME`` where ``PACKAGENAME`` is replaced with your package.
+Think of conda as replacing pip, except that you can also use conda to install pip, and then use pip nested within conda.
+You might do this if you want to use a package that is not common enough for conda to have it in a channel.
+You can also update packages with ``$ conda update PACKAGENAME``, and for other conda commands see `this cheetsheet <https://conda.io/docs/_downloads/conda-cheatsheet.pdf>`_ .
+
+**$PATH:** Suppose that you went to all of the trouble that I outlined above, either installing CPython or Anaconda, but then when you type in ``$ python`` or ``$ python3`` it does not exist or it is the wrong version.  For example, if this gives you the following prompt:
+
+.. code:: bash
+ 
+ Python 2.7.14 (default, Sep 23 2017, 22:06:14) 
+ [GCC 7.2.0] on linux2
+ Type "help", "copyright", "credits" or "license" for more information.
+ >>> 
+
+
+this means that it is using Python 2 still (see the Python 2.7.14).  If ``$ python3`` gives you a Python 3 prompt, then this is fine just be aware that you will need to use ``$ python3`` and ``$ pip3`` every time that we write ``$ python`` for example.
+If ``python3`` does not work, what is happening is that the shell does not know where your Python 3 installation is (for example in Ubuntu by install has a symbolic link in ``/usr/bin``).
+You first have to locate your installation, which will depend on your method.  
+If it is Anaconda then this is going to be in the Anaconda install directory (On my windows machine this is at ``C:\Users\James Sharpnack\Anaconda3``).
+In Linux, open your ``~/.profile`` file with a text editor such as emacs or vi and add a line 
+
+.. code:: bash
+
+ PATH="PATH_TO_PYTHON:$PATH"
+
+where PATH_TO_PYTHON is replaced with that path.
+In Mac OS X edit the file ``~/.bash_profile`` and add the line
+
+.. code:: bash
+
+ export PATH=PATH_TO_PYTHON:$PATH
+
+which does the same thing.
+Then run this with ``$ source ~/.profile`` (or ``.bash_profile`` for Mac). 
+In Windows, you can edit the path variable by using the Environment Variables in the Control Panel.
+Just search in Windows 8 for "environment variables" and it should come up.
+You can edit the Path variable there by clicking "Path" and "Edit".
+
+Text editors and IDEs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Files on your computer are just a bunch of bytes (strings of 0's and 1's) on your drive. A plain text editor reads these as characters via ASCII, which is a dictionary that converts bytes to characters (like how Ribosomes convert RNA base pairs to amino acids). So you can start a new file using an editor like emacs, vi, or notepad, and write something there like "Hello world." and then save it as "hello.txt" or "hello" or whatever. Then it writes the bytes that those characters correspond to on your drive. If you do the same thing in Microsoft Word and save it as a Word file, then Word converts it to a different set of bytes and this process is proprietary (it is legally protected by licenses like the recipe for CocaCola). If you open a Word document in emacs it will look like \320\317^Q\340\241\261^Z\341^@^@^@^@^@^@^@^@ which is not very helpful.
+
+One way to write code is to just select a text editor that you like and stick with it for all of your coding needs. Common choices are emacs, vim, sublime, notepad++, atom, etc. All of these have syntax highlighting, but you may need to do some work to enable it depending on your install. The most universal editors are vim and emacs, and they have their own hotkeys and interfaces. 
+For remote computing it is often nice to already be familiar with vim (or emacs).
+This is because these are command line text editors, and can be run entirely in the terminal.
+(Although, they both also have graphical user interface (GUI) extensions.)
+The following is a list of recommended text editors:
+
+- Vim: an open source text editor that is preinstalled on all operating systems other than Windows; has a terminal interface; best for remote computing; syntax highlighting for Python
+- Emacs: open source text editor with terminal interface; may have to install on server (with ``apt install emacs`` for example) for remote computing; syntax highlighting for Python
+- Atom: open source GUI for text editing; good GitHub integration
+- Sublime Text: open source GUI for text editing; written in Python with great packages 
+
+The simplest way to write and run Python scripts is to edit a file, for example, run in terminal ``$ emacs text.py`` and enter
+::
+
+ import os
+
+ for fn in os.listdir():
+     print(fn)
+
+After saving and exiting (in emacs Ctrl-X Ctrl-S Ctrl-X Ctrl-C) then run the script with ``$ python test.py``.
+This printed the contents of my current directory,
+
+.. parsed-literal::
+
+ perceptron.py
+ scrabble.py
+ test.py
+ proc_rst.py
+
+
+Because Python is interpreted, we are able to run the above script line by line in the Python shell.
+When we run ``$ python`` we get a prompt that we can use to run lines such as ``>>> import os; os.listdir()`` which will output the contents of the directory as well.
+You can use the Python shell as a sophisticated calculator, as in ``>>> 5003.38 + 134.56 - 2500``.
+This works because a just-in-time (JIT) compiler is running in the background, and it compiles each line or function when it needs to.
+Typically, the downside to this flexibility is that the code you write in Python is slower than if we had written it in C.
+
+Interactive development environments (IDE) are development tools with Python interpreters and other tools like tab completion (when you hit Tab it auto-completes the code snippet).
+IPython is an IDE that acts like a Python shell and has more extensive features than the native Python shell.  
+Conda comes with IPython or you can install with pip as in ``$ pip install ipython``.
+IPython has magic commands that are not part of the Python language, and they are prepended with % as in ``%time`` (we will use this magic command for profiling in the next Chapter).
+Often I will use ipython to test out code snippets and then use the magic command ``%save 1-30 temp.py`` to write lines 1 through 30 from IPython to a temporary file then move these to a module (a Python file) that I am working on.
+Then using the ``%run`` magic command I run the module to import the functions that I have just written.
+In this way, I have my favorite editor, emacs, open with the module that I am working on and the temporary code file from IPython, alongside IPython for testing and debugging the code.
+You can find a complete tutorial of IPython `in the ipython readthedocs <https://ipython.readthedocs.io/en/stable/interactive/tutorial.html>`_ .
+
+All of the editors mentioned above have a Python extension that allow you to have a Python prompt in the editor.
+This can expedite the process of copying code from IPython to the editor, although depending on the type of script, this may not be that important.
+In vim and emacs, the Python extension is called python-mode.
+Conda also has an IDE, called spyder, that is well suited to data science applications.
+If you want to use spyder (which I would recommend if you don't want to use a text editor with IPython), then you should open a terminal or shell, and run `$ conda install spyder`.
+PyCharm is another popular IDE for Python, and it `can be found on the JetBrains website <https://www.jetbrains.com/pycharm/>`_. 
+
+
+Jupyter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you use IPython at the command line, it is running the IPython kernel in the background.
+The kernel is a process that runs your code and does things like completing code and running magic functions.
+Jupyter is an application that communicates with the IPython kernel but provides a sophisticated interface that runs in your web browser.
+If you are using conda you probably already have jupyter installed.
+If you run ``$ jupyter notebook`` then it should open a browser tab and you should see the notebook dashboard.  This has files in you current directory which you can navigate around in.
+Jupyter is an application for working in IPython notebook files, which have extensions .ipynb.
+These are json files (we will see JSON return in a later chapter) that not only saves the code that you have run, but also the output and markdown around the code.
+
+Jupyter is well suited for presenting results of an analysis, and is not that well suited for time intensive scientific computing.
+If I am working with a moderately sized dataset, and am doing exploratory data analysis, then I will often use Jupyter.
+More often I will develop a module for computationally intensive processing of a dataset using the text editor and IPython.
+I'll use the module that I have written to process the dataset, which typically will output summary statistics, smaller resulting datasets, and results of analyses.
+Then I load these into jupyter and describe and document the analysis and results with markdown and visualizations.
+A good rule of thumb is that there should be no cells in your notebook that take more than 30 seconds to run, and most cells should be nearly instantaneous.
+If you have something that is taking a long time to run then separate it into a module and run it in the command line (perhaps on a server).
+
+In the left-hand corner of the dashboard, you can click new and select the Python 3 interpreter.  This will open a notebook, which you can rename.
+The notebook consists of cells that you can write code in and run via the IPython kernel.
+When you are working with a cell, you can either be in command mode or edit mode.
+In command mode, you can run the cell, move it around within the notebook, change the cell type to markdown etc.
+You can get to edit mode by hitting Enter over a cell.
+In edit mode, you are editing the contents, and still have access to IPython tools like tab completion.
+You can run the cell with Ctrl-Enter or Shift-Enter (to move down a cell also), and can exit to command mode with Esc.
+It helps to know more hotkeys, and you can find them `in this tutorial <https://www.dataquest.io/blog/jupyter-notebook-tips-tricks-shortcuts/>`_ .
+
+One very nice thing about Jupyter is that you can add markdown cells around the code cells to document the code, interpret results, and provide background.
+Markdown is a descriptive markup language that allows for easy structural formatting of text.
+For example a cell in markdown mode with 
+
+.. parsed-literal::
+
+ ### Header
+
+will produce a header like
+
+Header
+~~~~~~~~~
+
+You can easily add lists, tables, links, code snippets, quotes, embed HTML and images, and equations.
+You can find `a markdown cheatsheet here <https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet>`_ .
+Equations are in LaTeX, for example $\\alpha$ is interpretted as :math:`\alpha`.
+LaTeX is another markup language that is used for mathematical writing.
+You can write full equations and inline equations using \\[ and $ respectively.
+For a cheatsheet on LaTeX you can look at `this file <https://www.nyu.edu/projects/beber/files/Chang_LaTeX_sheet.pdf>`_ .
+
+
+Git and Versioning Systems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Git is an open source software (code that is free to use and develop by anyone) that provides version control. Imagine that you are working with team of people on the same file, say you all have access to the same Dropbox directory. You could all change the same file, but then when any of you syncs your changes then it will overwrite the other changes. You could set times to edit, such as Don edits from 10am-12pm, Peggy edits from 12pm-2pm, and Joan edits from 2pm-4pm. Or you could keep versions of files by changing the file name, so when I edit lucky_strikes_v3.py then I edit and save as lucky_strikes_v4.py. These all seem cumbersome, and versioning systems provide a better way. Git (and other versioning systems) provides the following features:
+
+- A history of changes to files serving as a backup.
+- Developers can work concurrently and then with the help of git merge their changes.
+- Tracing what changes were made by whom when.
+
+In any directory you can run ``$ git init`` and then it will add a .git folder at that directory.
+This is the root directory for your new repository and it will keep records of the files that are being tracked.
+Typically, you will want to track files that are human readable code files, git is not really made for storing data and other large files that you will not be editting by hand.
+If you have a file, say module.py that you want to track you add it with ``$ git add module.py`` and now the current version is staged for commit.
+You can see the status of files in the directory with ``$ git status``.  
+Once you are ready to commit the changes use ``$ git commit -m "some message"`` with a message that describes the commit in the quotes.
+Then if you have a remote repository set up you can push these changes to the remote repository with ``$ git push origin remote``.
+
+Why do all of this?
+As we have mentioned, it is mostly for collaboration.
+If someone else pushed their changes to the remote repository first, then you will get an error telling you to pull these changes before you push your own.
+Then you will rull ``$ git pull``, in which case, it will update your local repository.
+You with then get a notification that a conflict has occurred and where, in which case you will have to go into that file and resolve the conflict.
+Typically, there is some update that your colleague has done that you need to make your code consistent with.
+The file that is in conflict will have diff annotation, like >>>> indicating where the different versions conflict.
+Once the file is to your liking then you should git add the file, commit again, and push.
+
+Git is a distributed versioning system meaning that there is no distinction between a server and a client repository---all repositories are created equal.
+Github is a company that provides git repositories on their computers that you can use as your remote servers.
+You can set up an account on `github.com <http://github.com>`_ and then start your own repository.
+It will then show you how to initialize the repository on your computer and then you can add collaborations in the Settings tab.
+The collaborators can clone your repository with ``$ git clone https://github.com/username/reponame`` and the start working with it locally.
+
+The following are some resources for learning to use git:
+
+- `Git tutorials by Atlassian <https://www.atlassian.com/git/tutorials>`_
+- `Git command cheat sheet <https://www.git-tower.com/blog/git-cheat-sheet/>`_
+- `GitHub git tutorial <https://try.github.io/>`_
+
+This Book
+---------
+
+In this book we will view data science as a rich field that requires a variety of technologies, a broad set of principles, and a diverse community of scientists.  One byproduct of our holistic approach is that we will move between subject areas such as computer science, statistics, and mathematics.  While this is disconcerting to many students, this structure is a byproduct of recognizing that data science is a broader field that encompasses several subfields.  This book is one attempt to provide a common core of data science principles and technologies.  We will attempt to achieve some level of data science literacy, and the ultimate goal is to help you become a practicing data scientist.  
+This book makes for a poor reference, and should be read in sequence, there are many reference books out there for the Python language and data science modules.
+This book is intended for advanced undergraduate students and first year graduate students that have taken some computer science and statistics courses including having:
+
+* Taken a course or two in probability and statistics.  This means understanding random variables and their distributions, basic statistics, sampling distribution, confidence intervals, measures of association, hypothesis testing, and multiple linear regression.  When possible I will attempt to review these concepts, but this book may be difficult without a prior introduction to these concepts.  I recommend that you be familiar with the material in a book such as [stats]_
+* Have some experience with a sequential programming languages such as Python, R, C, or Java.  We will spend a very short amount of time learning the basic syntax of the Python programming language, and will move to more advanced topics such as object oriented programming very quickly.  For a more rudimentary and in depth introduction to Python you can go through the `material in this Python tutorial <http://heather.cs.ucdavis.edu/~matloff/Python/PLN/FastLanePython.pdf>`_ as you go through this book.
+* Have a working knowledge of linear algebra such as matrix multiplication, inner products, etc.  You will not be required to recall abstract linear algebra, such as facts about linear operators on a Hilbert space, and for the most part, it is sufficient to think of a matrix as an array.  I recommend you be familiar with the topics in `this free online textbook <https://www.math.ucdavis.edu/~linear/>`_ .
+
+Throughout the book we will take the perspective that there is some problem that you want to solve, and data is out there to help you solve it.  You have to extract and process the data and successfully complete the task with any and all tools at your disposal.  This book is intended to not only provide you with the tools necessary, but to also give you the conceptual framework to understand when to use which tools and why you are using them.
+
+.. [stats] De Veaux, Richard D., et al. "Stats: data and models". Boston: Pearson/Addison Wesley, 2005.
+

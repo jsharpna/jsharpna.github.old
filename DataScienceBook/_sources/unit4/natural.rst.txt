@@ -1,0 +1,6 @@
+Natural Language Processing
+=============================
+
+- wordnet, nltk
+- topic models
+- state space models and recurrent neural nets

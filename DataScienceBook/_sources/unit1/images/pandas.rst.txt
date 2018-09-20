@@ -1,0 +1,746 @@
+
+Pandas
+------
+
+.. code:: python
+
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+One might think that we have everything that we need to work with data.
+We can read data with built-in Python functions and we can store and
+manipulate that data with Numpy. Numpy is based around the Array, and
+Pandas is based around the DataFrame. Unlike the Array, the Dataframe
+treats each axis differently, with named columns and indexed rows.
+Pandas does this under the assumption that a DataFrame holds a large
+sample of a limited number of variables. Each column corresponds to a
+variable, while each row corresponds to an individual, time-point, or
+other index for repeated data.
+
+Due to this presumption, Pandas is able to optimize operations such as
+indexing, aggregation, and time series statistics. It also has great
+Input/Output tools for reading delimited data, working with databases,
+and HDF5 data. Pandas is built around the data types: DataFrames,
+Series. Roughly, a Series is a list of indices and values (think of a
+time series where the datatime is the index), and a DataFrame is a
+dictionary where the keys are the column names and the values are entire
+Series, and these Series have a common index. This is a high-level
+overview of Pandas, and for more syntax details see
+http://pandas.pydata.org/pandas-docs/stable/
+
+Series
+~~~~~~
+
+Let's simulate a Brownian motion so that we can discuss Series objects.
+You can see a plot of this below, we will go over data visualization in
+the next chapter.
+
+.. code:: python
+
+    T = 1000
+    innov = np.random.normal(0,1,T)
+    brown = np.cumsum(innov)
+
+.. code:: python
+
+    plt.plot(brown)
+    plt.show()
+
+
+
+.. image:: output_5_0.png
+
+
+Let's suppose that the above simulation represents the change in a stock
+price starting from Jan 1, 2015. Pandas provides a tool for making
+sequences of datetimes; the following makes a DateTimeIndex object.
+
+.. code:: python
+
+    days = pd.date_range('1/1/2015',periods=T,freq='d')
+
+We will return to datetime functionality in Pandas later. Another option
+for working with datetimes is the ``datetime`` package, which has the
+date, time, and datetime types and a timedelta object for increments of
+time. To see the specifics of the ``datetime`` package you can look at
+https://docs.python.org/3.7/library/datetime.html
+
+The resulting list contains the dates, for example,
+
+.. code:: python
+
+    days[600]
+
+
+
+
+.. parsed-literal::
+
+    Timestamp('2016-08-23 00:00:00', freq='D')
+
+
+
+We can initialize a series with a 1D array and an index sequence. If you
+omit the index then it will index with the row number. You can also
+initialize with dictionaries where the index values are the keys and the
+values are the data.
+
+.. code:: python
+
+    stock = pd.Series(brown,index=days)
+
+The Series object should be thought of as a vector of data where each
+value is attached to an index value. Series operations will preserve the
+indices when they can. You can slice a series as if it were an array; in
+the following, we look at every seventh day in the first 100 days.
+
+.. code:: python
+
+    stock[:100:7]
+
+
+
+
+.. parsed-literal::
+
+    2015-01-01   -0.132526
+    2015-01-08    3.900432
+    2015-01-15    7.371181
+    2015-01-22    6.224340
+    2015-01-29    3.449301
+    2015-02-05    1.346746
+    2015-02-12    2.084879
+    2015-02-19   -0.752967
+    2015-02-26   -0.983502
+    2015-03-05   -0.575965
+    2015-03-12    1.140087
+    2015-03-19   -2.205040
+    2015-03-26   -2.214539
+    2015-04-02   -1.170000
+    2015-04-09   -1.984565
+    Freq: 7D, dtype: float64
+
+
+
+Due to the indexing, we can also think of this as a dictionary, as in
+the following.
+
+.. code:: python
+
+    stock['2016/7/27']
+
+
+
+
+.. parsed-literal::
+
+    11.191250684953793
+
+
+
+One of the key features that makes the series different from an array is
+that operations between two series will align the indices. For example,
+suppose that we have bought 100 shares of another stock on Jan 1, 2016,
+which we can simulate as well. As usual, since we are reusing code,
+let's wrap it up in a function which we could put in a module.
+
+.. code:: python
+
+    def stock_sim(T,day1):
+        """Simulate a stock for T days starting from day1"""
+        innov = np.random.normal(0,1,T)
+        brown = np.cumsum(innov)
+        days = pd.date_range(day1,periods=T,freq='d')
+        return pd.Series(brown,index=days)
+
+.. code:: python
+
+    T = 1000 - 365
+    day1 = '2016/1/1'
+    stock_2 = stock_sim(T,day1)
+
+For each date we would like to see the difference between the value of
+the portfolio and the amount we spent on the portfolio. This is
+proportional to the sum of the two changes in stock price since we have
+bought even amounts of each stock.
+
+.. code:: python
+
+    portfolio = stock.add(stock_2,fill_value=0)
+
+``stock`` and ``stock_2`` have different lengths but we are able to add
+them because the indices can be matched. So after 2016 the change in
+value of stock 2 is added to stock 1 since that will correspond to the
+change in portfolio value. We had to specify a ``fill_value`` of 0
+otherwise it would try report the portfolio value as missing before
+2016. We can plot this.
+
+.. code:: python
+
+    # See next chapter
+    ax = portfolio.plot(title="Portfolio gain")
+    ax.figure.autofmt_xdate()
+    plt.show()
+
+
+
+.. image:: output_22_0.png
+
+
+Dataframe
+~~~~~~~~~
+
+You should think of a dataframe as a collection of series objects with a
+common index. Each series in the dataframe has a different name, and
+they should be thought of as different variables. We can initialize the
+dataframe with a dictionary mapping names to series objects.
+
+.. code:: python
+
+    port_df = pd.DataFrame({'stock 1':stock,'stock 2':stock_2,'portfolio':portfolio})
+
+If we had passed arrays instead of series then the default index of the
+row numbers would be used. You can also pass a 2D array and specify the
+``indices`` and ``columns`` arguments. There are other ways to
+initialize a dataframe, such as from lists of tuples and lists of
+dictionaries.
+
+We can view the first few rows of any dataframe with the ``head``
+method.
+
+.. code:: python
+
+    port_df.head()
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>2015-01-01</th>
+          <td>-0.132526</td>
+          <td>NaN</td>
+          <td>-0.132526</td>
+        </tr>
+        <tr>
+          <th>2015-01-02</th>
+          <td>-0.087030</td>
+          <td>NaN</td>
+          <td>-0.087030</td>
+        </tr>
+        <tr>
+          <th>2015-01-03</th>
+          <td>-1.578688</td>
+          <td>NaN</td>
+          <td>-1.578688</td>
+        </tr>
+        <tr>
+          <th>2015-01-04</th>
+          <td>-0.240958</td>
+          <td>NaN</td>
+          <td>-0.240958</td>
+        </tr>
+        <tr>
+          <th>2015-01-05</th>
+          <td>1.170581</td>
+          <td>NaN</td>
+          <td>1.170581</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+We see that stock 2 was filled with NaN values. We can also get at the
+indices and names via
+
+.. code:: python
+
+    print(port_df.index[:7])
+    print(port_df.columns)
+
+
+.. parsed-literal::
+
+    DatetimeIndex(['2015-01-01', '2015-01-02', '2015-01-03', '2015-01-04',
+                   '2015-01-05', '2015-01-06', '2015-01-07'],
+                  dtype='datetime64[ns]', freq='D')
+    Index(['stock 1', 'stock 2', 'portfolio'], dtype='object')
+
+
+Accessing elements in a dataframe differs from arrays in the following
+ways:
+
+-  dataframes act like dictionaries from the column names to the column
+-  slicing is done over the row indices
+-  to
+
+.. code:: python
+
+    port_df['stock 1'].head() # this returns the column
+
+
+
+
+.. parsed-literal::
+
+    2015-01-01   -0.132526
+    2015-01-02   -0.087030
+    2015-01-03   -1.578688
+    2015-01-04   -0.240958
+    2015-01-05    1.170581
+    Freq: D, Name: stock 1, dtype: float64
+
+
+
+.. code:: python
+
+    port_df['2015/1/1':'2016/1/1'].head() #this returns a slice of rows
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>2015-01-01</th>
+          <td>-0.132526</td>
+          <td>NaN</td>
+          <td>-0.132526</td>
+        </tr>
+        <tr>
+          <th>2015-01-02</th>
+          <td>-0.087030</td>
+          <td>NaN</td>
+          <td>-0.087030</td>
+        </tr>
+        <tr>
+          <th>2015-01-03</th>
+          <td>-1.578688</td>
+          <td>NaN</td>
+          <td>-1.578688</td>
+        </tr>
+        <tr>
+          <th>2015-01-04</th>
+          <td>-0.240958</td>
+          <td>NaN</td>
+          <td>-0.240958</td>
+        </tr>
+        <tr>
+          <th>2015-01-05</th>
+          <td>1.170581</td>
+          <td>NaN</td>
+          <td>1.170581</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+Boolean fancy indexing works in the place of the slice above as well,
+for example, we can select rows with a boolean series,
+
+.. code:: python
+
+    port_df[port_df['portfolio'] > port_df['stock 1']].head()
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>2016-01-01</th>
+          <td>8.154289</td>
+          <td>0.702001</td>
+          <td>8.856290</td>
+        </tr>
+        <tr>
+          <th>2016-01-12</th>
+          <td>3.746795</td>
+          <td>0.412568</td>
+          <td>4.159364</td>
+        </tr>
+        <tr>
+          <th>2016-01-13</th>
+          <td>1.930705</td>
+          <td>0.585910</td>
+          <td>2.516615</td>
+        </tr>
+        <tr>
+          <th>2016-01-18</th>
+          <td>-2.250490</td>
+          <td>0.158522</td>
+          <td>-2.091968</td>
+        </tr>
+        <tr>
+          <th>2016-01-19</th>
+          <td>-1.874360</td>
+          <td>0.796581</td>
+          <td>-1.077779</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+which will find the elements in which the portfolio is better off than
+just our share in stock 1. The comparison between the portfolio and
+stock 1 is not quite fair because we invested more money in the
+portfolio. We can create new columns via the following assignment,
+
+.. code:: python
+
+    s1sim = port_df['stock 1'].add(port_df['stock 1']['2016/1/1':],fill_value=0)
+    port_df['stock 1 sim'] = s1sim
+    port_df[port_df['portfolio'] > port_df['stock 1 sim']].head()
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+          <th>stock 1 sim</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>2016-01-16</th>
+          <td>-2.004913</td>
+          <td>-1.310433</td>
+          <td>-3.315347</td>
+          <td>-4.009827</td>
+        </tr>
+        <tr>
+          <th>2016-01-17</th>
+          <td>-2.863114</td>
+          <td>-0.532889</td>
+          <td>-3.396003</td>
+          <td>-5.726228</td>
+        </tr>
+        <tr>
+          <th>2016-01-18</th>
+          <td>-2.250490</td>
+          <td>0.158522</td>
+          <td>-2.091968</td>
+          <td>-4.500980</td>
+        </tr>
+        <tr>
+          <th>2016-01-19</th>
+          <td>-1.874360</td>
+          <td>0.796581</td>
+          <td>-1.077779</td>
+          <td>-3.748719</td>
+        </tr>
+        <tr>
+          <th>2016-01-20</th>
+          <td>-1.835044</td>
+          <td>1.822567</td>
+          <td>-0.012477</td>
+          <td>-3.670089</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+We added the value of stock 1 after 2016 to all of stock 1 to see what
+the price would be if we invested in stock 1 again on Jan 1, 2016. If we
+wanted to select instead a specific date, we would need to use the
+``loc`` method,
+
+.. code:: python
+
+    port_df.loc['2016/7/27']
+
+
+
+
+.. parsed-literal::
+
+    stock 1        11.191251
+    stock 2         2.867483
+    portfolio      14.058734
+    stock 1 sim    22.382501
+    Name: 2016-07-27 00:00:00, dtype: float64
+
+
+
+We can select and slice the dataframe as if it were a Numpy array using
+the ``iloc`` method,
+
+.. code:: python
+
+    port_df.iloc[400:405,0:3]
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>2016-02-05</th>
+          <td>-3.581697</td>
+          <td>6.968880</td>
+          <td>3.387182</td>
+        </tr>
+        <tr>
+          <th>2016-02-06</th>
+          <td>-3.854760</td>
+          <td>6.472026</td>
+          <td>2.617266</td>
+        </tr>
+        <tr>
+          <th>2016-02-07</th>
+          <td>-2.697462</td>
+          <td>7.555933</td>
+          <td>4.858471</td>
+        </tr>
+        <tr>
+          <th>2016-02-08</th>
+          <td>-4.389190</td>
+          <td>10.106156</td>
+          <td>5.716965</td>
+        </tr>
+        <tr>
+          <th>2016-02-09</th>
+          <td>-4.027021</td>
+          <td>8.067919</td>
+          <td>4.040898</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+Other things to be aware of are
+
+-  the ``info`` method which provides the types and information of the
+   columns,
+-  many elementwise Numpy operations can be performed on series and
+   dataframes, such as ``np.exp``
+-  Pandas has many of the same descriptive statistics such as
+   ``dataframe.mean()`` including ``min, max, std, count,...``
+
+We can see many of the descriptive statistics with the ``describe``
+method.
+
+.. code:: python
+
+    port_df.describe()
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+    
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+    
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>stock 1</th>
+          <th>stock 2</th>
+          <th>portfolio</th>
+          <th>stock 1 sim</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>count</th>
+          <td>1000.000000</td>
+          <td>635.000000</td>
+          <td>1000.000000</td>
+          <td>1000.000000</td>
+        </tr>
+        <tr>
+          <th>mean</th>
+          <td>2.209039</td>
+          <td>8.755110</td>
+          <td>7.768534</td>
+          <td>2.802033</td>
+        </tr>
+        <tr>
+          <th>std</th>
+          <td>6.782089</td>
+          <td>9.029220</td>
+          <td>11.534137</td>
+          <td>12.119164</td>
+        </tr>
+        <tr>
+          <th>min</th>
+          <td>-13.394813</td>
+          <td>-14.372408</td>
+          <td>-20.329462</td>
+          <td>-26.789627</td>
+        </tr>
+        <tr>
+          <th>25%</th>
+          <td>-2.834049</td>
+          <td>3.965685</td>
+          <td>0.280122</td>
+          <td>-4.962457</td>
+        </tr>
+        <tr>
+          <th>50%</th>
+          <td>3.748605</td>
+          <td>11.666626</td>
+          <td>7.178422</td>
+          <td>4.646818</td>
+        </tr>
+        <tr>
+          <th>75%</th>
+          <td>7.014775</td>
+          <td>15.381508</td>
+          <td>16.705302</td>
+          <td>10.896449</td>
+        </tr>
+        <tr>
+          <th>max</th>
+          <td>16.995441</td>
+          <td>23.052934</td>
+          <td>32.141200</td>
+          <td>29.696000</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+

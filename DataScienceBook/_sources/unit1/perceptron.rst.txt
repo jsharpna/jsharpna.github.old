@@ -1,0 +1,326 @@
+A First Learning Machine
+==================================
+
+In this chapter, we will see the following:
+
+* Supervised learning
+* Numpy and vectorization
+* Our first learning machine: the perceptron
+
+Supervised Learning
+------------------------
+
+
+
+.. code:: python
+
+    ## Numpy is loaded with namespace prefix np
+    ## To access anything in numpy you need to prepend it with np
+    import numpy as np
+    data_folder = '../data/'
+
+.. code:: python
+
+    with open(data_folder + 'winequality-red.csv','r') as winefile:
+        header = winefile.readline()
+        wine_list = [line.strip().split(';') for line in winefile]
+
+.. code:: python
+
+    print(wine_list[0])
+
+
+.. parsed-literal::
+
+    ['7.4', '0.7', '0', '1.9', '0.076', '11', '34', '0.9978', '3.51', '0.56', '9.4', '5']
+
+
+.. code:: python
+
+    wine_ar = np.array(wine_list,dtype=np.float64)
+
+.. code:: python
+
+    print(wine_ar)
+    wine_ar.shape
+
+
+.. parsed-literal::
+
+    [[ 7.4    0.7    0.    ...  0.56   9.4    5.   ]
+     [ 7.8    0.88   0.    ...  0.68   9.8    5.   ]
+     [ 7.8    0.76   0.04  ...  0.65   9.8    5.   ]
+     ...
+     [ 6.3    0.51   0.13  ...  0.75  11.     6.   ]
+     [ 5.9    0.645  0.12  ...  0.71  10.2    5.   ]
+     [ 6.     0.31   0.47  ...  0.66  11.     6.   ]]
+
+
+
+
+.. parsed-literal::
+
+    (1599, 12)
+
+
+
+1599 records with 12 rows, we want to predict the quality which is the
+last column with the characteristics of the wine (first 11 columns).
+
+.. code:: python
+
+    header
+
+
+
+
+.. parsed-literal::
+
+    '"fixed acidity";"volatile acidity";"citric acid";"residual sugar";"chlorides";"free sulfur dioxide";"total sulfur dioxide";"density";"pH";"sulphates";"alcohol";"quality"\n'
+
+
+
+.. code:: python
+
+    names = [name.strip('"') for name in header.strip().split(';')]
+    print(names)
+
+
+.. parsed-literal::
+
+    ['fixed acidity', 'volatile acidity', 'citric acid', 'residual sugar', 'chlorides', 'free sulfur dioxide', 'total sulfur dioxide', 'density', 'pH', 'sulphates', 'alcohol', 'quality']
+
+
+.. code:: python
+
+    #Subselect the predictor X and response y
+    y = wine_ar[:,-1]
+    X = wine_ar[:,:-1]
+    n,p = X.shape
+
+.. code:: python
+
+    y.shape, X.shape #just checking
+
+
+
+
+.. parsed-literal::
+
+    ((1599,), (1599, 11))
+
+
+
+Predicting wine quality with Ordinary Least Squares (OLS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    import statsmodels.api as sm
+
+.. code:: python
+
+    X = np.hstack((np.ones((n,1)),X)) #add intercept
+
+.. code:: python
+
+    wine_ols = sm.OLS(y,X) #Initialize the OLS 
+    wine_res = wine_ols.fit()
+
+.. code:: python
+
+    print(wine_res.summary())
+
+
+.. parsed-literal::
+
+                                OLS Regression Results                            
+    ==============================================================================
+    Dep. Variable:                      y   R-squared:                       0.361
+    Model:                            OLS   Adj. R-squared:                  0.356
+    Method:                 Least Squares   F-statistic:                     81.35
+    Date:                Thu, 06 Sep 2018   Prob (F-statistic):          1.79e-145
+    Time:                        11:24:16   Log-Likelihood:                -1569.1
+    No. Observations:                1599   AIC:                             3162.
+    Df Residuals:                    1587   BIC:                             3227.
+    Df Model:                          11                                         
+    Covariance Type:            nonrobust                                         
+    ==============================================================================
+                     coef    std err          t      P>|t|      [0.025      0.975]
+    ------------------------------------------------------------------------------
+    const         21.9652     21.195      1.036      0.300     -19.607      63.538
+    x1             0.0250      0.026      0.963      0.336      -0.026       0.076
+    x2            -1.0836      0.121     -8.948      0.000      -1.321      -0.846
+    x3            -0.1826      0.147     -1.240      0.215      -0.471       0.106
+    x4             0.0163      0.015      1.089      0.276      -0.013       0.046
+    x5            -1.8742      0.419     -4.470      0.000      -2.697      -1.052
+    x6             0.0044      0.002      2.009      0.045       0.000       0.009
+    x7            -0.0033      0.001     -4.480      0.000      -0.005      -0.002
+    x8           -17.8812     21.633     -0.827      0.409     -60.314      24.551
+    x9            -0.4137      0.192     -2.159      0.031      -0.789      -0.038
+    x10            0.9163      0.114      8.014      0.000       0.692       1.141
+    x11            0.2762      0.026     10.429      0.000       0.224       0.328
+    ==============================================================================
+    Omnibus:                       27.376   Durbin-Watson:                   1.757
+    Prob(Omnibus):                  0.000   Jarque-Bera (JB):               40.965
+    Skew:                          -0.168   Prob(JB):                     1.27e-09
+    Kurtosis:                       3.708   Cond. No.                     1.13e+05
+    ==============================================================================
+    
+    Warnings:
+    [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+    [2] The condition number is large, 1.13e+05. This might indicate that there are
+    strong multicollinearity or other numerical problems.
+
+
+There are a few things to notice: - the R-squared statistic is pretty
+poor, which means that the addition of these covariates is not reducing
+the residual variance by much - there is strong colinearity, which means
+that some of these predictor variables can be nearly written as a linear
+combination of the others
+
+Prediction evaluation with training-test split
+----------------------------------------------
+
+.. code:: python
+
+    np.random.shuffle(wine_ar) #start by randomly shuffling data
+    wine_ar = np.hstack((np.ones((n,1)),wine_ar)) #add intercept
+    train_size = n // 2 #set training set size 50-50 split
+    wine_tr, wine_te = wine_ar[:train_size], wine_ar[train_size:] # training and test split
+
+.. code:: python
+
+    # fit data and get the estimated beta 
+    train_ols = sm.OLS(wine_tr[:,-1],wine_tr[:,:-1])
+    train_res = train_ols.fit()
+    beta_hat = train_res.params
+
+.. code:: python
+
+    y_te, X_te = wine_te[:,-1], wine_te[:,:-1]
+    y_hat = X_te @ beta_hat
+    losses = (y_te - y_hat)**2. #extract sq error losses
+    te_error = np.mean(losses) #average losses
+
+.. code:: python
+
+    print(te_error, te_error**0.5) #test error and its sqrt
+
+
+.. parsed-literal::
+
+    0.41531101266937576 0.6444462837734234
+
+
+.. code:: python
+
+    y_const = wine_te[:,-1].mean() #what if we predict with a single value?
+    np.mean((y_te - y_const)**2.) #test error - do you see the array broadcasting?
+
+
+
+
+.. parsed-literal::
+
+    0.6407359375
+
+
+
+The test error for the OLS regression is 0.415 but we should compare
+this to the test error for the constant predictor which is 0.640. This
+is consistent with the small R-squared in the above analysis.
+
+.. code:: python
+
+    print(y_hat[0:10]) #predictions
+    print(y_te[0:10]) #actual values
+
+
+.. parsed-literal::
+
+    [5.28516483 5.20432846 5.37849799 6.44910839 6.03562429 6.149762
+     5.12044022 5.85733763 6.0109202  6.1063934 ]
+    [5. 4. 5. 7. 6. 6. 6. 5. 6. 6.]
+
+
+.. code:: python
+
+    y_round = np.round(y_hat) #what if we needed to predict an integer? round!
+    ro_error = np.mean((y_te - y_round)**2.)
+    print(ro_error, ro_error**0.5)
+
+
+.. parsed-literal::
+
+    0.50625 0.7115124735378854
+
+
+The square error loss is worse if we round the prediction to the nearest
+integer, which shouldn't be too surprising. We lose flexibility to
+minimize the square error loss if we are restricted to integers.
+
+.. code:: python
+
+    np.mean(y_round != y_te)
+
+
+
+
+.. parsed-literal::
+
+    0.41625
+
+
+
+One advantage of rounding is if we modify our loss function to be the
+0-1 loss, then we have a chance of doing better. The average 0-1 loss is
+the mis-classification rate and it is 41.6%.
+
+
+A supervised learner is any algorithm that takes p dimensional training data of the form 
+
+.. math::
+
+   x_i \in \mathbb R^p, y_i \in \mathbb R, \quad i=1,\ldots,n
+
+and fits a learner, which is a function that predicts y from a new datapoint, or a test point x, which we denote :math:`\hat f(x)`. 
+The corresponding random variables :math:`X,Y` are called the predictor and response variables respectively, and we will assume that the X variables are p dimensional.
+
+For example, we are a car insurance company and we want to predict how much a customer will cost our company in claims per year.
+Before a customer takes out a policy they fill out a form to obtain a quote for the cost of the policy (the premium).
+This form tells the company certain details about the customer, such as where they live, demographic information, and driver history.
+
+
+Linear regression is an example of a supervised learner such that 
+
+.. math::
+
+   \hat f(x) = \sum_{j = 1}^p \hat \beta_j x_j = \hat \beta^\top x
+
+EXAMPLE OF PREDICT ON ABOVE DATA WITH LINEAR REGRESSION
+
+CLASSIFICATION
+
+BATCH V ONLINE LEARNING In machine learning, we call a method *online* if it will take streaming training data, where the data
+
+
+Numpy and Vectorization
+----------------------------------------
+
+INTRO NUMPY AND LINEAR ALGEBRA
+
+SLICING
+
+REWRITE ABOVE CODE IN NUMPY
+
+VECTORIZATION AND MATRIX MULTIPLY
+
+BROADCASTING FOR TEST PREDICTION
+
+
+The Perceptron
+-----------------
+
+
+

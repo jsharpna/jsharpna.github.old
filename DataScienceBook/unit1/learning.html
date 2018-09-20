@@ -1,0 +1,1129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Statistical Learning Machines &#8212; DataTech 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Wrangling" href="wrangling.html" />
+    <link rel="prev" title="Data and Computation" href="data.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="statistical-learning-machines">
+<h1>Statistical Learning Machines<a class="headerlink" href="#statistical-learning-machines" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we will see the following:</p>
+<ul class="simple">
+<li>Review of ordinary least squares</li>
+<li>Prediction, training, and testing</li>
+<li>Numpy, classes, random sampling, and regression in Python</li>
+<li>Supervised learning, online learning with the perceptron</li>
+</ul>
+<div class="section" id="the-prediction-perspective">
+<h2>The Prediction Perspective<a class="headerlink" href="#the-prediction-perspective" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s return to the wine dataset that we began to discuss in the last chapter.
+Recall that the wine dataset had 12 variables about different wine vintages, and the last column was the quality of the wine.
+We will use numpy, Python&#8217;s linear algebra package, to store and manipulate the dataset.
+Numpy is build around the <code class="docutils literal"><span class="pre">numpy.array</span></code> type, and we will introduce the array and other numpy methods more fully later in this chapter.
+First, we have to import numpy, and we use the convention that we use the <code class="docutils literal"><span class="pre">np</span></code> prefix for numpy.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">## Numpy is loaded with namespace prefix np</span>
+<span class="c1">## To access anything in numpy you need to prepend it with np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">data_folder</span> <span class="o">=</span> <span class="s1">&#39;../data/&#39;</span>
+</pre></div>
+</div>
+<p>Load the dataset, as we did in the previous chapter.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_folder</span> <span class="o">+</span> <span class="s1">&#39;winequality-red.csv&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">winefile</span><span class="p">:</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">winefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">wine_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">winefile</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As we can see the <code class="docutils literal"><span class="pre">wine_list</span></code> is a list of lists with each value of the nested lists being a string.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">wine_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>produces the output,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;7.4&#39;</span><span class="p">,</span> <span class="s1">&#39;0.7&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;1.9&#39;</span><span class="p">,</span> <span class="s1">&#39;0.076&#39;</span><span class="p">,</span> <span class="s1">&#39;11&#39;</span><span class="p">,</span> <span class="s1">&#39;34&#39;</span><span class="p">,</span> <span class="s1">&#39;0.9978&#39;</span><span class="p">,</span> <span class="s1">&#39;3.51&#39;</span><span class="p">,</span> <span class="s1">&#39;0.56&#39;</span><span class="p">,</span> <span class="s1">&#39;9.4&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Let&#8217;s load in the dataset into a numpy array object.
+The simplest way to initialize an array is by passing it a list (or a list of lists).
+We will also simultaneously convert the strings into floats using the <code class="docutils literal"><span class="pre">dtype</span></code> argument.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">wine_ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">wine_list</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can display a summary of the array and the shape of the array with the following:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">wine_ar</span><span class="p">)</span>
+<span class="n">wine_ar</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span> <span class="mf">7.4</span>    <span class="mf">0.7</span>    <span class="mf">0.</span>    <span class="o">...</span>  <span class="mf">0.56</span>   <span class="mf">9.4</span>    <span class="mf">5.</span>   <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">7.8</span>    <span class="mf">0.88</span>   <span class="mf">0.</span>    <span class="o">...</span>  <span class="mf">0.68</span>   <span class="mf">9.8</span>    <span class="mf">5.</span>   <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">7.8</span>    <span class="mf">0.76</span>   <span class="mf">0.04</span>  <span class="o">...</span>  <span class="mf">0.65</span>   <span class="mf">9.8</span>    <span class="mf">5.</span>   <span class="p">]</span>
+ <span class="o">...</span>
+ <span class="p">[</span> <span class="mf">6.3</span>    <span class="mf">0.51</span>   <span class="mf">0.13</span>  <span class="o">...</span>  <span class="mf">0.75</span>  <span class="mf">11.</span>     <span class="mf">6.</span>   <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">5.9</span>    <span class="mf">0.645</span>  <span class="mf">0.12</span>  <span class="o">...</span>  <span class="mf">0.71</span>  <span class="mf">10.2</span>    <span class="mf">5.</span>   <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">6.</span>     <span class="mf">0.31</span>   <span class="mf">0.47</span>  <span class="o">...</span>  <span class="mf">0.66</span>  <span class="mf">11.</span>     <span class="mf">6.</span>   <span class="p">]]</span>
+</pre></div>
+</div>
+<p>The right-most column is the wine quality and it seems to be a positive integer.
+We can see that the list of lists now is a 2-dimensional array, with shape,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1599</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The shape is the number of rows by the number of columns.
+<code class="docutils literal"><span class="pre">shape</span></code> is an attribute of the array type.
+So we have that the wine dataset has 1599 records with 12 rows, and we want to predict the quality which is the
+last column with the characteristics of the wine (first 11 columns).</p>
+<p>We will apply ordinary least squares (OLS) regression on the wine dataset, which means that we need to isolate the X and Y variables.
+You should recall from linear regression, that ordinary least squares seeks to predict the Y variable as a linear function of the X variables (all 11 variables).
+Let us subselect the last column and all but the last using slicing.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">#Subselect the predictor X and response y</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">wine_ar</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">wine_ar</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">n</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+<p>When slicing a numpy array was can do the same thing as slicing for a list, except that we specify the slice for the rows and the columns.
+In the above the slice <code class="docutils literal"><span class="pre">wine_ar[:,:-1]</span></code> specified to use all of the rows and all but the last column.</p>
+<p>As a check,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#just checking</span>
+</pre></div>
+</div>
+<p>outputs,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">((</span><span class="mi">1599</span><span class="p">,),</span> <span class="p">(</span><span class="mi">1599</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="effects-on-wine-quality-with-ols">
+<h3>Effects on wine quality with OLS<a class="headerlink" href="#effects-on-wine-quality-with-ols" title="Permalink to this headline">¶</a></h3>
+<p>At the most basic level, OLS regression finds a linear function of the X variables, that minimizes the sum of squares of the residuals.
+We will return to this in the next subsection, but for now, you should recall that inference for linear regression is based on the theory of normal random variables.
+Specifically, if the residuals are normally distributed, then we can test if the coefficient associated with a variable is zero or not, corresponding to the null and alternative hypotheses respectively.
+This is what the t-test accomplishes: that under normality, when a variable has no effect, the t-statistic has a t-distribution, and consequently we can obtain a P-value for this statistic.
+To perform this type of analysis, we will use the <code class="docutils literal"><span class="pre">statsmodels</span></code> package.
+This package has many of the common statistics and statistical tests that you should be familiar with from introductory statistics courses.</p>
+<p>Let&#8217;s import the statsmodels api.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+</pre></div>
+</div>
+<p>When using <code class="docutils literal"><span class="pre">sm.OLS</span></code> we will need to include our own intercept.
+We can create a column of all <code class="docutils literal"><span class="pre">1</span></code> which is the intercept variable using the <code class="docutils literal"><span class="pre">np.ones</span></code> method.
+This will create an n by 1 array which we can horizontally stack with <code class="docutils literal"><span class="pre">X</span></code> &#8212; horizontal stacking will concatenate arrays along the last dimension.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">X</span><span class="p">))</span> <span class="c1">#add intercept</span>
+</pre></div>
+</div>
+<p>Then we can fit the OLS with the following:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">wine_ols</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">X</span><span class="p">)</span> <span class="c1">#Initialize the OLS</span>
+<span class="n">wine_res</span> <span class="o">=</span> <span class="n">wine_ols</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>and print the summary.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">wine_res</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>                            <span class="n">OLS</span> <span class="n">Regression</span> <span class="n">Results</span>
+<span class="o">==============================================================================</span>
+<span class="n">Dep</span><span class="o">.</span> <span class="n">Variable</span><span class="p">:</span>                      <span class="n">y</span>   <span class="n">R</span><span class="o">-</span><span class="n">squared</span><span class="p">:</span>                       <span class="mf">0.361</span>
+<span class="n">Model</span><span class="p">:</span>                            <span class="n">OLS</span>   <span class="n">Adj</span><span class="o">.</span> <span class="n">R</span><span class="o">-</span><span class="n">squared</span><span class="p">:</span>                  <span class="mf">0.356</span>
+<span class="n">Method</span><span class="p">:</span>                 <span class="n">Least</span> <span class="n">Squares</span>   <span class="n">F</span><span class="o">-</span><span class="n">statistic</span><span class="p">:</span>                     <span class="mf">81.35</span>
+<span class="n">Date</span><span class="p">:</span>                <span class="n">Thu</span><span class="p">,</span> <span class="mi">06</span> <span class="n">Sep</span> <span class="mi">2018</span>   <span class="n">Prob</span> <span class="p">(</span><span class="n">F</span><span class="o">-</span><span class="n">statistic</span><span class="p">):</span>          <span class="mf">1.79e-145</span>
+<span class="n">Time</span><span class="p">:</span>                        <span class="mi">11</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">16</span>   <span class="n">Log</span><span class="o">-</span><span class="n">Likelihood</span><span class="p">:</span>                <span class="o">-</span><span class="mf">1569.1</span>
+<span class="n">No</span><span class="o">.</span> <span class="n">Observations</span><span class="p">:</span>                <span class="mi">1599</span>   <span class="n">AIC</span><span class="p">:</span>                             <span class="mf">3162.</span>
+<span class="n">Df</span> <span class="n">Residuals</span><span class="p">:</span>                    <span class="mi">1587</span>   <span class="n">BIC</span><span class="p">:</span>                             <span class="mf">3227.</span>
+<span class="n">Df</span> <span class="n">Model</span><span class="p">:</span>                          <span class="mi">11</span>
+<span class="n">Covariance</span> <span class="n">Type</span><span class="p">:</span>            <span class="n">nonrobust</span>
+<span class="o">==============================================================================</span>
+                 <span class="n">coef</span>    <span class="n">std</span> <span class="n">err</span>          <span class="n">t</span>      <span class="n">P</span><span class="o">&gt;|</span><span class="n">t</span><span class="o">|</span>      <span class="p">[</span><span class="mf">0.025</span>      <span class="mf">0.975</span><span class="p">]</span>
+<span class="o">------------------------------------------------------------------------------</span>
+<span class="n">const</span>         <span class="mf">21.9652</span>     <span class="mf">21.195</span>      <span class="mf">1.036</span>      <span class="mf">0.300</span>     <span class="o">-</span><span class="mf">19.607</span>      <span class="mf">63.538</span>
+<span class="n">x1</span>             <span class="mf">0.0250</span>      <span class="mf">0.026</span>      <span class="mf">0.963</span>      <span class="mf">0.336</span>      <span class="o">-</span><span class="mf">0.026</span>       <span class="mf">0.076</span>
+<span class="n">x2</span>            <span class="o">-</span><span class="mf">1.0836</span>      <span class="mf">0.121</span>     <span class="o">-</span><span class="mf">8.948</span>      <span class="mf">0.000</span>      <span class="o">-</span><span class="mf">1.321</span>      <span class="o">-</span><span class="mf">0.846</span>
+<span class="n">x3</span>            <span class="o">-</span><span class="mf">0.1826</span>      <span class="mf">0.147</span>     <span class="o">-</span><span class="mf">1.240</span>      <span class="mf">0.215</span>      <span class="o">-</span><span class="mf">0.471</span>       <span class="mf">0.106</span>
+<span class="n">x4</span>             <span class="mf">0.0163</span>      <span class="mf">0.015</span>      <span class="mf">1.089</span>      <span class="mf">0.276</span>      <span class="o">-</span><span class="mf">0.013</span>       <span class="mf">0.046</span>
+<span class="n">x5</span>            <span class="o">-</span><span class="mf">1.8742</span>      <span class="mf">0.419</span>     <span class="o">-</span><span class="mf">4.470</span>      <span class="mf">0.000</span>      <span class="o">-</span><span class="mf">2.697</span>      <span class="o">-</span><span class="mf">1.052</span>
+<span class="n">x6</span>             <span class="mf">0.0044</span>      <span class="mf">0.002</span>      <span class="mf">2.009</span>      <span class="mf">0.045</span>       <span class="mf">0.000</span>       <span class="mf">0.009</span>
+<span class="n">x7</span>            <span class="o">-</span><span class="mf">0.0033</span>      <span class="mf">0.001</span>     <span class="o">-</span><span class="mf">4.480</span>      <span class="mf">0.000</span>      <span class="o">-</span><span class="mf">0.005</span>      <span class="o">-</span><span class="mf">0.002</span>
+<span class="n">x8</span>           <span class="o">-</span><span class="mf">17.8812</span>     <span class="mf">21.633</span>     <span class="o">-</span><span class="mf">0.827</span>      <span class="mf">0.409</span>     <span class="o">-</span><span class="mf">60.314</span>      <span class="mf">24.551</span>
+<span class="n">x9</span>            <span class="o">-</span><span class="mf">0.4137</span>      <span class="mf">0.192</span>     <span class="o">-</span><span class="mf">2.159</span>      <span class="mf">0.031</span>      <span class="o">-</span><span class="mf">0.789</span>      <span class="o">-</span><span class="mf">0.038</span>
+<span class="n">x10</span>            <span class="mf">0.9163</span>      <span class="mf">0.114</span>      <span class="mf">8.014</span>      <span class="mf">0.000</span>       <span class="mf">0.692</span>       <span class="mf">1.141</span>
+<span class="n">x11</span>            <span class="mf">0.2762</span>      <span class="mf">0.026</span>     <span class="mf">10.429</span>      <span class="mf">0.000</span>       <span class="mf">0.224</span>       <span class="mf">0.328</span>
+<span class="o">==============================================================================</span>
+<span class="n">Omnibus</span><span class="p">:</span>                       <span class="mf">27.376</span>   <span class="n">Durbin</span><span class="o">-</span><span class="n">Watson</span><span class="p">:</span>                   <span class="mf">1.757</span>
+<span class="n">Prob</span><span class="p">(</span><span class="n">Omnibus</span><span class="p">):</span>                  <span class="mf">0.000</span>   <span class="n">Jarque</span><span class="o">-</span><span class="n">Bera</span> <span class="p">(</span><span class="n">JB</span><span class="p">):</span>               <span class="mf">40.965</span>
+<span class="n">Skew</span><span class="p">:</span>                          <span class="o">-</span><span class="mf">0.168</span>   <span class="n">Prob</span><span class="p">(</span><span class="n">JB</span><span class="p">):</span>                     <span class="mf">1.27e-09</span>
+<span class="n">Kurtosis</span><span class="p">:</span>                       <span class="mf">3.708</span>   <span class="n">Cond</span><span class="o">.</span> <span class="n">No</span><span class="o">.</span>                     <span class="mf">1.13e+05</span>
+<span class="o">==============================================================================</span>
+
+<span class="n">Warnings</span><span class="p">:</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="n">Standard</span> <span class="n">Errors</span> <span class="n">assume</span> <span class="n">that</span> <span class="n">the</span> <span class="n">covariance</span> <span class="n">matrix</span> <span class="n">of</span> <span class="n">the</span> <span class="n">errors</span> <span class="ow">is</span> <span class="n">correctly</span> <span class="n">specified</span><span class="o">.</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="n">The</span> <span class="n">condition</span> <span class="n">number</span> <span class="ow">is</span> <span class="n">large</span><span class="p">,</span> <span class="mf">1.13e+05</span><span class="o">.</span> <span class="n">This</span> <span class="n">might</span> <span class="n">indicate</span> <span class="n">that</span> <span class="n">there</span> <span class="n">are</span>
+<span class="n">strong</span> <span class="n">multicollinearity</span> <span class="ow">or</span> <span class="n">other</span> <span class="n">numerical</span> <span class="n">problems</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>This tabular output should be familiar to you.
+You can see the result of the tests of each individual effect under the <code class="docutils literal"><span class="pre">P&gt;|t|</span></code> column.
+The overall goodness of fit can be assessed from the <code class="docutils literal"><span class="pre">R-squared</span></code> value and the <code class="docutils literal"><span class="pre">F-statistic</span></code>.
+The R-squared statistic is pretty poor (it is closer to 0 than 1), which means that the addition of these covariates is not reducing the residual variance by much.
+Furthermore, there is strong colinearity, which means that some of these predictor variables can be nearly written as a linear combination of the others.</p>
+<p>This type of analysis is called <em>statistical inference</em> and it is used to answer some challenging questions, such as &#8220;Does the residual sugar have a significant effect on the wine quality?&#8221;
+Another perspective is <em>prediction</em> which answers the simpler question &#8220;Can we accurately predict the quality of the wine from these variables?&#8221;
+This is a simpler problem because it does not have to explicitely deal with issue of confounding, identifiability, or distributional assumptions.
+In the regression analysis, the interpretation of the P-values relies on the residuals being normally distributed.
+As we will see, we can get a good sense of the quality of the OLS prediction without this distributional assumption.</p>
+</div>
+<div class="section" id="prediction-loss-and-testing">
+<h3>Prediction, loss, and testing<a class="headerlink" href="#prediction-loss-and-testing" title="Permalink to this headline">¶</a></h3>
+<p>We can think of prediction as a game with two players.
+You are player 1, the predictor, and you have a strategy for predicting Y given X.
+In the linear regression example, this is given by the coefficient vector <span class="math">\(\hat \beta = (\hat \beta_0,\ldots,\hat \beta_p)\)</span> (in our example above <span class="math">\(\hat \beta_0\)</span> is the intercept and <span class="math">\(p=11\)</span>) which you have trained from <span class="math">\(n_0\)</span> data.
+Then player 2, which is usually thought of as nature, provides you with a new instance of X variables:</p>
+<div class="math">
+\[x_{n_0 + 1} = \left( x_{n_0+1,1},\ldots,x_{n_0+1,p} \right).\]</div>
+<p>You then make a prediction, which for linear regression is</p>
+<div class="math">
+\[\hat y_{n_0 + 1} = \hat \beta_0 + \hat \beta_1 x_{n_0+1,1} + \ldots + \hat \beta_p x_{n_0 + 1,p}.\]</div>
+<p>As player 1, <span class="math">\(\hat y\)</span> is your move, and then player 2 counters with the actual Y variable value, <span class="math">\(y\)</span>.
+You then confer a loss based on an agreed upon loss function, for example the squared error,</p>
+<div class="math">
+\[\ell(\hat y_{n_0 + 1}, y_{n_0 + 1}) = \left( \hat y_{n_0 + 1} - y_{n_0 + 1} \right)^2.\]</div>
+<p>We can also imagine modifying the above example so that player 2 presents you with many data and you suffer the average of the losses.</p>
+<p>How well did you do?
+That will depend on the quality of your prediction, and on the specific instance of X,Y variables that player 2 provided.
+In statistical learning theory, we think of the X,Y variables as random and coming from some unknown joint distribution.
+We would like to minimize the expected loss, which is known as the <em>risk</em> of the predictor.
+Any predictor, including <span class="math">\(\hat y\)</span> for the OLS coefficients <span class="math">\(\hat \beta\)</span>, has a risk and we compare two predictors by their risks.
+How can we estimate the risk of the OLS predictor?</p>
+<p>The answer is to simulate the prediction process.
+In this simulation we draw a random training dataset which we used to estimate the OLS coefficients.
+Then we simulate a different random testing dataset, and we see the accumulated losses.
+We can accomplish this by randomly shuffling the dataset and then letting the first <span class="math">\(n_0\)</span> samples be the training set and let the remainder be the test set.
+Train the predictor with the training set and calculate the losses over the test set, and average the losses to get the <em>test error</em>.</p>
+<p>Because the training and testing datasets are different random samples then they are independent and the average testing loss is an unbiased estimate of the risk of the predictor.
+Let <span class="math">\(\hat y_i\)</span> be the prediction of the ith sample using OLS on the training set only.
+Moreover, by the law of large numbers,</p>
+<div class="math">
+\[\frac{1}{n - n_0} \sum_{i=n_0 + 1}^{n} \ell(\hat y_i,y_i) \rightarrow \mathbb E \left[ \ell(\hat y,y) | \hat \beta \right]\]</div>
+<p>as <span class="math">\(n \rightarrow \infty\)</span> where this convergence is in probability.
+The above limit works when we keep the training set fixed and so in the right hand side of the equation we condition on the OLS coefficients.
+The idea is that if we sample a large enough test set then we can approximate the risk of the predictor.
+The initial shuffle was important because otherwise we would not know that the training and testing sets were draws from the same population.
+For example, it could very well have been that the wine dataset was ordered by vintage year, then the training set would have been older vintages than the test set.</p>
+<p>We can randomly shuffle the rows of the array using the <code class="docutils literal"><span class="pre">shuffle</span></code> method in the <code class="docutils literal"><span class="pre">numpy.random</span></code> module.
+Then we make the training-test split by slicing.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">wine_ar</span><span class="p">)</span> <span class="c1">#start by randomly shuffling data</span>
+<span class="n">wine_ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span><span class="n">wine_ar</span><span class="p">))</span> <span class="c1">#add intercept</span>
+<span class="n">train_size</span> <span class="o">=</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">2</span> <span class="c1">#set training set size 50-50 split</span>
+<span class="n">wine_tr</span><span class="p">,</span> <span class="n">wine_te</span> <span class="o">=</span> <span class="n">wine_ar</span><span class="p">[:</span><span class="n">train_size</span><span class="p">],</span> <span class="n">wine_ar</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span> <span class="c1"># training and test split</span>
+</pre></div>
+</div>
+<p>In the above code, I make the size of the training set half of the full dataset.
+Run OLS and extract the coefficients,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># fit data and get the estimated beta</span>
+<span class="n">train_ols</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="n">wine_tr</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">wine_tr</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">train_res</span> <span class="o">=</span> <span class="n">train_ols</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">beta_hat</span> <span class="o">=</span> <span class="n">train_res</span><span class="o">.</span><span class="n">params</span>
+</pre></div>
+</div>
+<p>You can see what attributes are attached to <code class="docutils literal"><span class="pre">train_res</span></code> with tab completion in ipython or you can see <a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.RegressionResults.html">the documentation here</a> .
+Now <code class="docutils literal"><span class="pre">beta_hat</span></code> is a vector of length <code class="docutils literal"><span class="pre">train_size</span></code>, and we need to get <span class="math">\(\hat y\)</span> for the test set.
+To accomplish this we use the matrix multiplication,</p>
+<div class="math">
+\[\hat y_i = \sum_{j=0}^p x_{i,j} \hat \beta_j = (X \hat \beta)_i\]</div>
+<p>if <span class="math">\(X\)</span> is the test set matrix.
+In Python 3, matrix multiply is accomplished with the <code class="docutils literal"><span class="pre">&#64;</span></code> operator.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">y_te</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">wine_te</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">wine_te</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">X_te</span> <span class="o">@</span> <span class="n">beta_hat</span>
+<span class="n">losses</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_te</span> <span class="o">-</span> <span class="n">y_hat</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="c1">#extract sq error losses</span>
+<span class="n">te_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span> <span class="c1">#average losses</span>
+</pre></div>
+</div>
+<p>The losses above are the element-wise subtraction of the test Y variables and the predicted Y variables, then the element-wise square.
+We used <code class="docutils literal"><span class="pre">numpy.mean</span></code> to average the losses.
+Let&#8217;s look at the test error:</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">te_error</span><span class="p">,</span> <span class="n">te_error</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="c1">#test error and its sqrt</span>
+</pre></div>
+</div>
+<p>returns</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.41531101266937576</span> <span class="mf">0.6444462837734234</span>
+</pre></div>
+</div>
+<p>Is this good?
+We can compare this to the constant predictor, where for each test datum you predict with the mean of the training Y values.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">y_const</span> <span class="o">=</span> <span class="n">wine_tr</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="c1">#what if we predict with a single value?</span>
+<span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_te</span> <span class="o">-</span> <span class="n">y_const</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="c1">#test error - do you see the array broadcasting?</span>
+</pre></div>
+</div>
+<p>Here we used the <code class="docutils literal"><span class="pre">array.mean()</span></code> method to average the elements of the array.
+This does the same as <code class="docutils literal"><span class="pre">numpy.mean()</span></code> except it is a class method.
+The result is the test error,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.6640473287949108</span>
+</pre></div>
+</div>
+<p>The test error for the OLS regression is 0.415 but we should compare this to the test error for the constant predictor which is 0.664.
+This is consistent with the small R-squared in the above analysis.
+Out of curiosity, let&#8217;s look at the actual predictions,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">y_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span> <span class="c1">#predictions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y_te</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span> <span class="c1">#actual values</span>
+</pre></div>
+</div>
+<p>with output,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">5.28516483</span> <span class="mf">5.20432846</span> <span class="mf">5.37849799</span> <span class="mf">6.44910839</span> <span class="mf">6.03562429</span> <span class="mf">6.149762</span>
+ <span class="mf">5.12044022</span> <span class="mf">5.85733763</span> <span class="mf">6.0109202</span>  <span class="mf">6.1063934</span> <span class="p">]</span>
+<span class="p">[</span><span class="mf">5.</span> <span class="mf">4.</span> <span class="mf">5.</span> <span class="mf">7.</span> <span class="mf">6.</span> <span class="mf">6.</span> <span class="mf">6.</span> <span class="mf">5.</span> <span class="mf">6.</span> <span class="mf">6.</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The actual values are integers.
+Suppose that you are working with a winery to help develop an excellent vintage.
+As a vintner, your customer might not know what to make of a prediction of <code class="docutils literal"><span class="pre">5.85733763</span></code>, and would prefer a predicted score.
+To this end, we can round our OLS predictions,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">y_round</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">y_hat</span><span class="p">)</span> <span class="c1">#what if we needed to predict an integer? round!</span>
+<span class="n">ro_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_te</span> <span class="o">-</span> <span class="n">y_round</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ro_error</span><span class="p">,</span> <span class="n">ro_error</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting test error and the square root is</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.50625</span> <span class="mf">0.7115124735378854</span>
+</pre></div>
+</div>
+<p>The square error loss is worse if we round the prediction to the nearest integer, which shouldn&#8217;t be too surprising. We lose flexibility to minimize the square error loss if we are restricted to integers.
+But now we can ask, &#8220;What is the proportion of vintages for which we get the score exactly right (or equivalently, the proportion wrong)?&#8221;</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_round</span> <span class="o">!=</span> <span class="n">y_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>What we did here is perform an element-wise Boolean operation <code class="docutils literal"><span class="pre">y_round</span> <span class="pre">!=</span> <span class="pre">y_te</span></code> which produced a Boolean vector.
+When we calculate the mean of this, it will cast it as integers, <code class="docutils literal"><span class="pre">0,1</span></code> for <code class="docutils literal"><span class="pre">False,True</span></code> respectively, then average these integers.
+The result is,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.41625</span>
+</pre></div>
+</div>
+<p>What we have done here is modify our loss function during the testing phase.
+Instead of the square error loss it is now the 0-1 loss,</p>
+<div class="math">
+\[\begin{split}\ell_{0/1}(\hat y_{n_0 + 1}, y_{n_0 + 1}) = \left\{ \begin{array}{cc}
+1, &amp;\textrm{if } \hat y_{n_0 + 1} \ne y_{n_0 + 1} \\
+0, &amp;\textrm{if } \hat y_{n_0 + 1} = y_{n_0 + 1}
+\end{array} \right..\end{split}\]</div>
+<p>The average 0-1 loss is the mis-classification rate and it is <code class="docutils literal"><span class="pre">41.6%</span></code>.
+These ideas suggest a more general form of statistical learning, called supervised learning.
+Before we get to that, let&#8217;s take a closer look at Numpy.</p>
+</div>
+</div>
+<div class="section" id="numpy-and-vectorization">
+<h2>Numpy and Vectorization<a class="headerlink" href="#numpy-and-vectorization" title="Permalink to this headline">¶</a></h2>
+<p>Numpy is built around the array type. The array differs from lists
+because all of the elements need to have the same type, such as integers
+or floats. But why introduce the array type at all as opposed to storing
+your data in nested lists since it is more restrictive? Firstly, the
+array is allows for more sophisticated slicing and indexing. Secondly,
+and more importantly, the array has fast optimized linear algebra
+methods.</p>
+<p>To begin using arrays, we need to create them. There are several ways to
+initialize arrays in numpy. We have seen the use of <code class="docutils literal"><span class="pre">np.array</span></code> with a
+list as the first parameter to convert lists into arrays. The following
+functions create special matrices such as the all ones array, all zeros,
+and the identity matrix. For example, let&#8217;s recall that we can
+initialize an all ones vector with <code class="docutils literal"><span class="pre">np.ones(d)</span></code> where <code class="docutils literal"><span class="pre">d</span></code> is the
+length of the vector or size of the array that you want to construct.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">## Special matrices</span>
+<span class="n">onesmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">zerosmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ident</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">onesmat</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">zerosmat</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ident</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span><span class="p">]]</span>
+<span class="p">[[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]]</span>
+<span class="p">[[</span><span class="mf">1.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">1.</span> <span class="mf">0.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">1.</span> <span class="mf">0.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">0.</span> <span class="mf">1.</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Just like <code class="docutils literal"><span class="pre">range</span></code> iterates through integers, the <code class="docutils literal"><span class="pre">np.arange</span></code>
+function will create a vector that counts up to the integer.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">ran</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ran</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="mi">0</span>  <span class="mi">1</span>  <span class="mi">2</span>  <span class="mi">3</span>  <span class="mi">4</span>  <span class="mi">5</span>  <span class="mi">6</span>  <span class="mi">7</span>  <span class="mi">8</span>  <span class="mi">9</span> <span class="mi">10</span> <span class="mi">11</span> <span class="mi">12</span> <span class="mi">13</span> <span class="mi">14</span> <span class="mi">15</span> <span class="mi">16</span> <span class="mi">17</span> <span class="mi">18</span> <span class="mi">19</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We can also use <code class="docutils literal"><span class="pre">loadtxt</span></code> to load a delimited file of numbers. Mostly,
+we will use Pandas for reading data, but for now let&#8217;s load the
+following dataset into a numpy array. This dataset can be found at
+<a class="reference external" href="https://archive.ics.uci.edu/ml/datasets/seeds">https://archive.ics.uci.edu/ml/datasets/seeds</a></p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">data_folder</span> <span class="o">=</span> <span class="s1">&#39;../data/&#39;</span>
+<span class="n">seeds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">data_folder</span> <span class="o">+</span> <span class="s1">&#39;seeds_dataset.txt&#39;</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This dataset contains the following variables describing wheat seed
+kernels. Column meanings for the seeds dataset:</p>
+<ol class="arabic simple">
+<li>area A,</li>
+<li>perimeter P,</li>
+<li>compactness <span class="math">\(C = 4 \pi A / P^2\)</span>,</li>
+<li>length of kernel,</li>
+<li>width of kernel,</li>
+<li>asymmetry coefficient</li>
+<li>length of kernel groove.</li>
+</ol>
+<p>The last column corresponds to the wheat variety.</p>
+<p>The following are attributes for arrays, try tab completion in ipython to see
+available methods. One important concept is the data type of the object,
+called the dtype. We have already seen the use of the dtype argument
+when we initialized the array in
+<code class="docutils literal"><span class="pre">wine_ar</span> <span class="pre">=</span> <span class="pre">np.array(wine_list,dtype=np.float64)</span></code>. <code class="docutils literal"><span class="pre">np.float64</span></code> is an
+example of a Numpy dtype object, and it is used to specify the type of
+the elements of the array.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">n</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#Remember tuple unpacking!</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;type:</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">ndim:</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">shape:</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">size:</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">dtype:</span><span class="se">\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="nb">type</span><span class="p">(</span><span class="n">seeds</span><span class="p">),</span><span class="n">seeds</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span><span class="n">seeds</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">seeds</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="n">seeds</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>type:       &lt;class &#39;numpy.ndarray&#39;&gt;
+ndim:       2
+shape:      (210, 8)
+size:       1680
+dtype:      float64
+</pre></div>
+</div>
+<p>One example of the linear algebra tools in Numpy is the transpose which
+swaps the roles of rows and columns in an array. For nested lists this
+process would be nearly impossible. We can do this by the attribute
+<code class="docutils literal"><span class="pre">seeds.T</span></code>.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">seeds</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">210</span><span class="p">)</span>
+<span class="p">[[</span><span class="mf">15.26</span>   <span class="mf">14.88</span>   <span class="mf">14.29</span>   <span class="o">...</span> <span class="mf">13.2</span>    <span class="mf">11.84</span>   <span class="mf">12.3</span>   <span class="p">]</span>
+ <span class="p">[</span><span class="mf">14.84</span>   <span class="mf">14.57</span>   <span class="mf">14.09</span>   <span class="o">...</span> <span class="mf">13.66</span>   <span class="mf">13.21</span>   <span class="mf">13.34</span>  <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">0.871</span>   <span class="mf">0.8811</span>  <span class="mf">0.905</span>  <span class="o">...</span>  <span class="mf">0.8883</span>  <span class="mf">0.8521</span>  <span class="mf">0.8684</span><span class="p">]</span>
+ <span class="o">...</span>
+ <span class="p">[</span> <span class="mf">2.221</span>   <span class="mf">1.018</span>   <span class="mf">2.699</span>  <span class="o">...</span>  <span class="mf">8.315</span>   <span class="mf">3.598</span>   <span class="mf">5.637</span> <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">5.22</span>    <span class="mf">4.956</span>   <span class="mf">4.825</span>  <span class="o">...</span>  <span class="mf">5.056</span>   <span class="mf">5.044</span>   <span class="mf">5.063</span> <span class="p">]</span>
+ <span class="p">[</span> <span class="mf">1.</span>      <span class="mf">1.</span>      <span class="mf">1.</span>     <span class="o">...</span>  <span class="mf">3.</span>      <span class="mf">3.</span>      <span class="mf">3.</span>    <span class="p">]]</span>
+</pre></div>
+</div>
+<p>Using the ones vector we can sum along the rows or the columns of the
+matrix. This is our first example of a matrix multiply in python, but
+you should become very proficient at using matrix operations to
+accomplish your goals.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">rowsum</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="c1"># sum the rows</span>
+<span class="n">colsum</span> <span class="o">=</span> <span class="n">seeds</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>   <span class="c1"># sum the columns</span>
+</pre></div>
+</div>
+<p>You can do this in a more succinct and efficient way using the
+<code class="docutils literal"><span class="pre">np.sum</span></code> function, and specify the axis to sum along.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">rowsum</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">colsum</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">axis</span></code> parameter is consistent with the position in the brackets
+<code class="docutils literal"><span class="pre">[]</span></code> of the axis. So for example, <code class="docutils literal"><span class="pre">axis=0</span></code> corresponds to the row as
+in <code class="docutils literal"><span class="pre">i</span></code> in <code class="docutils literal"><span class="pre">seeds[i,:]</span></code>. Let&#8217;s think about a way to do this without
+using Numpy matrix multiplication or the <code class="docutils literal"><span class="pre">sum</span></code> method.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mult_ones</span><span class="p">(</span><span class="n">seeds</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]</span><span class="o">*</span><span class="n">p</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">:</span> <span class="c1">#arrays are iterable and return the rows</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">output</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">time</span> <span class="n">output</span> <span class="o">=</span> <span class="n">mult_ones</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mi">344</span> <span class="n">µs</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mi">8</span> <span class="n">µs</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mi">352</span> <span class="n">µs</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mi">355</span> <span class="n">µs</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">time</span> <span class="n">output</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mi">46</span> <span class="n">µs</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mi">0</span> <span class="n">ns</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mi">46</span> <span class="n">µs</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mf">49.1</span> <span class="n">µs</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">time</span> <span class="n">output</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">user</span> <span class="mi">103</span> <span class="n">µs</span><span class="p">,</span> <span class="n">sys</span><span class="p">:</span> <span class="mi">2</span> <span class="n">µs</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="mi">105</span> <span class="n">µs</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mi">114</span> <span class="n">µs</span>
+</pre></div>
+</div>
+<p>It seems that the matrix multiply is in fact faster than the sum, and
+both are faster than the custom implementation. The idea that we can
+solve a repeated problem using a matrix multiply or vector operation is
+called <em>vectorization</em>.</p>
+<p>Why should the operations above produce different run times? The answer
+lies in the way that Python code is compiled. The basic idea is that the
+just-in-time compilation of the Python code will not be as efficient or
+stable as the C implementation that is precompiled and used in Numpy. So
+even though in theory the matrix multiply should be the same as
+<code class="docutils literal"><span class="pre">mult_ones</span></code>, in reality the precompilation makes a big difference. If
+you are performing algebraic operations in for loops and especially
+nested for loops, you should think about ways to turn it into matrix
+operations, because that will likely be faster.</p>
+<div class="section" id="matrix-operations">
+<h3>Matrix operations<a class="headerlink" href="#matrix-operations" title="Permalink to this headline">¶</a></h3>
+<p>Numpy has many common matrix operations that can be used to vectorize
+basic scalar operations. For example we can divide all of the elements
+by <code class="docutils literal"><span class="pre">10</span></code>, etc.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">## Some elementwise operations</span>
+<span class="n">decseeds</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">/</span><span class="mf">10.0</span>
+<span class="n">mulseeds</span> <span class="o">=</span> <span class="mi">15</span><span class="o">*</span><span class="n">seeds</span> <span class="o">-</span> <span class="mf">1.</span>
+</pre></div>
+</div>
+<p>Numpy has built in elementwise operations like <code class="docutils literal"><span class="pre">log</span></code>, <code class="docutils literal"><span class="pre">dot</span></code>,
+<code class="docutils literal"><span class="pre">sqrt</span></code>.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">## Elementwise functions</span>
+<span class="n">declog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">decseeds</span><span class="p">)</span>
+<span class="n">decexp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">decseeds</span><span class="p">)</span>
+<span class="n">decrt</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">decseeds</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have already seen horizontally stacking arrays with <code class="docutils literal"><span class="pre">np.hstack</span></code>.
+This is a bit of a misnomer though because in general this is
+concatenation, and you can use the <code class="docutils literal"><span class="pre">np.concatenate</span></code> method. All of the
+dimensions of the concatenated arrays must match except for the axis
+parameter, which is the axis to concatenate along.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">ratvec</span> <span class="o">=</span> <span class="n">seeds</span><span class="p">[:,</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="n">seeds</span><span class="p">[:,</span><span class="mi">5</span><span class="p">]</span>
+<span class="n">ratvec</span> <span class="o">=</span> <span class="n">ratvec</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">seeds_rat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">seeds</span><span class="p">,</span><span class="n">ratvec</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ratvec</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">seeds</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">((</span><span class="mi">210</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">210</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You can see that all but the last axis match above. So for example, you
+can concatenate along a different axis like so,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">everyten</span> <span class="o">=</span> <span class="n">seeds</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">10</span><span class="p">,:]</span>
+<span class="n">seeds_ten</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">seeds</span><span class="p">,</span><span class="n">everyten</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Other matrix operations are the mean, min, max as in,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sum: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">mean: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">min: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">max: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">seeds</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">seeds</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">seeds</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">sum</span><span class="p">:</span> <span class="mf">10557.3759</span>
+<span class="n">mean</span><span class="p">:</span> <span class="mf">6.284152321428571</span>
+<span class="nb">min</span><span class="p">:</span> <span class="mf">0.7651</span>
+<span class="nb">max</span><span class="p">:</span> <span class="mf">21.18</span>
+</pre></div>
+</div>
+<p>In the above we did not specify an axis so it produced the result
+applied to the whole array. We can produce the row or column-wise mean,
+as in,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sum: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">mean: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">min: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">max: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">seeds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">seeds</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">seeds</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">sum</span><span class="p">:</span> <span class="p">[</span> <span class="mf">3117.98</span>    <span class="mf">3057.45</span>     <span class="mf">182.9097</span>  <span class="mf">1181.992</span>    <span class="mf">684.307</span>    <span class="mf">777.0422</span>
+  <span class="mf">1135.695</span>    <span class="mf">420.</span>    <span class="p">]</span>
+<span class="n">mean</span><span class="p">:</span> <span class="p">[</span> <span class="mf">14.84752381</span>  <span class="mf">14.55928571</span>   <span class="mf">0.87099857</span>   <span class="mf">5.62853333</span>   <span class="mf">3.25860476</span>
+   <span class="mf">3.70020095</span>   <span class="mf">5.40807143</span>   <span class="mf">2.</span>        <span class="p">]</span>
+<span class="nb">min</span><span class="p">:</span> <span class="p">[</span> <span class="mf">10.59</span>    <span class="mf">12.41</span>     <span class="mf">0.8081</span>   <span class="mf">4.899</span>    <span class="mf">2.63</span>     <span class="mf">0.7651</span>   <span class="mf">4.519</span>    <span class="mf">1.</span>    <span class="p">]</span>
+<span class="nb">max</span><span class="p">:</span> <span class="p">[</span> <span class="mf">21.18</span>    <span class="mf">17.25</span>     <span class="mf">0.9183</span>   <span class="mf">6.675</span>    <span class="mf">4.033</span>    <span class="mf">8.456</span>    <span class="mf">6.55</span>     <span class="mf">3.</span>    <span class="p">]</span>
+</pre></div>
+</div>
+<p>There are other array operations that we will not go over, such as
+<code class="docutils literal"><span class="pre">cumsum</span></code>. You can find this any many other useful methods and
+operations in the Numpy reference:
+<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/">https://docs.scipy.org/doc/numpy/reference/</a></p>
+</div>
+<div class="section" id="array-broadcasting">
+<h3>Array Broadcasting<a class="headerlink" href="#array-broadcasting" title="Permalink to this headline">¶</a></h3>
+<p>Suppose that we sum two arrays with the same shape. It should not be
+surprising that this produces an elementwise sum.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">seeds_poly</span> <span class="o">=</span> <span class="n">seeds</span> <span class="o">+</span> <span class="n">seeds</span> <span class="o">**</span> <span class="mf">2.</span>
+</pre></div>
+</div>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">ssum</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ssum</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">8</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>The first instance of broadcasting happens when we compare an array and
+a vector (or just lower dimensional array). If the problem can be
+resolved just by reshaping the array by padding 1&#8217;s to the first axes,
+then it will do that to the vector. For example,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">ssum</span> <span class="o">-</span> <span class="n">ssum</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>will broadcast the <code class="docutils literal"><span class="pre">ssum</span></code> array as a <code class="docutils literal"><span class="pre">(1,8)</span></code> shape array before
+completing the subtraction operation.</p>
+<p>The second form of broadcasting does not merely alter the shape of the
+array, but in fact replicates it. Consider the following array operation
+which in effect removes the column mean from each column, thus centering
+the variables.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">seeds_center</span> <span class="o">=</span> <span class="n">seeds</span> <span class="o">-</span> <span class="n">seeds</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is subtracting arrays of different shapes. The way that it worked
+is by effectively duplicating the vector 210 times and horizontally
+stacking these duplicates. It knew to do this because the arrays still
+matched in the second dimension. It will similarly broadcast an array
+that matches along the last dimension.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">seeds_alt</span> <span class="o">=</span> <span class="n">seeds</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Broadcasting overall works by trying the first method of padding the
+shape with 1s and then the second method of replicating the array. If
+neither work then the operation will throw and error. Broadcasting can
+provide for succinct ways to vectorize operations without having to
+reshape or create new arrays.</p>
+</div>
+<div class="section" id="matrix-slicing-views-and-copies">
+<h3>Matrix Slicing, Views, and Copies<a class="headerlink" href="#matrix-slicing-views-and-copies" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s begin by making a copy of the <code class="docutils literal"><span class="pre">seeds</span></code> matrix so that we do not
+alter the contents of the original data.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">seeds_copy</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">#this will be explained later</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">3.242</span> <span class="mf">4.543</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">3.201</span> <span class="mf">1.717</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>We see above an example of slicing, and it works in the same way as list
+slicing except that it happens on both axes simultaneously. We copied
+the seeds matrix because for arrays assignment just copies the pointer
+to the elements. For example,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">seeds_copy</span>
+<span class="n">A</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">11</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="mf">11.0</span>
+</pre></div>
+</div>
+<p><em>Fancy indexing</em> refers to look-ups using lists or boolean vectors as
+arguments. You can do this in combination with slicing as in the
+following.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1">## Boolean and list indexing</span>
+<span class="n">myrows</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">97</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="n">myrows</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">14.29</span> <span class="mf">14.09</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">15.69</span> <span class="mf">14.75</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">18.98</span> <span class="mf">16.57</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>If you index by a list in each axis then you will need to make sure the
+lists have the same length, because it will output a vector where each
+pair of indices are evaluated in sequence.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">mycols</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="n">myrows</span><span class="p">,</span><span class="n">mycols</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">14.09</span>    <span class="mf">0.9058</span>  <span class="mf">6.449</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>For boolean vectors, if you pass a boolean vector of the same length as
+that axis then it will subselect the True elements in that axis.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">rowslarge</span> <span class="o">=</span> <span class="n">seeds</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="mf">20.2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds</span><span class="p">[</span><span class="n">rowslarge</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">20.71</span> <span class="mf">17.23</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">21.18</span> <span class="mf">17.21</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">20.88</span> <span class="mf">17.05</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">20.97</span> <span class="mf">17.25</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">20.24</span> <span class="mf">16.91</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>We have seen that you can slice along either dimension in an array just
+like you would with a list. We can assign values to the slices like we
+do for lists as in the following.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">seeds_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+<span class="n">seeds_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mi">999</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Assignment also works with fancy indexing. In the above display, we
+assigned the variable <code class="docutils literal"><span class="pre">A</span></code> to the slice of the <code class="docutils literal"><span class="pre">seeds_copy</span></code> array and
+then altered the entries of the sliced array. But what happened to
+<code class="docutils literal"><span class="pre">A</span></code>?</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span><span class="mf">999.</span><span class="p">,</span> <span class="mf">999.</span><span class="p">],</span>
+       <span class="p">[</span><span class="mf">999.</span><span class="p">,</span> <span class="mf">999.</span><span class="p">],</span>
+       <span class="p">[</span><span class="mf">999.</span><span class="p">,</span> <span class="mf">999.</span><span class="p">],</span>
+       <span class="p">[</span><span class="mf">999.</span><span class="p">,</span> <span class="mf">999.</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>So we see that if you save a slice as another variable then that other
+variable reflects changes to the elements of the original array.
+Furthermore, if you save the slice as another variable then perform the
+same operation on that variable it can modify the original array in some
+instances. This is because slicing creates what is known as a view of
+the original array. A view should be thought of as a pointer to the
+elements of the original array. For example,</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">A</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="mf">2.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">seeds_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">1998.</span> <span class="mf">1998.</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Fancy indexing on the other hand produces copies instead of views so it
+does not have this behavior. If you are assigning slices and want to
+prevent this behavior then you will need to copy the array with the
+<code class="docutils literal"><span class="pre">copy</span></code> method as we did at the beginning of this subsection.</p>
+</div>
+</div>
+<div class="section" id="supervised-learning">
+<h2>Supervised Learning<a class="headerlink" href="#supervised-learning" title="Permalink to this headline">¶</a></h2>
+<p>At the beginning of this chapter, we saw that OLS regression can be thought of as a predictor that is designed to give small square error loss.
+This should not be surprising because OLS is the solution to the following minimization problem,</p>
+<div class="math">
+\[\min_{\beta \in \mathbb R^{p+1}} \frac{1}{n_0} \sum_{i=1}^{n_0} \left(y_i - \beta_0 - \sum_{j=1}^p x_{i,j} \beta_j \right)^2.\]</div>
+<p>In words, OLS is the minimizer of the average square error loss of any linear predictor.
+The square error objective above can be written as</p>
+<div class="math">
+\[\frac{1}{n_0} \sum_{i=1}^{n_0} \ell(\hat y_i,y_i),
+\tag{ER}\]</div>
+<p>where <span class="math">\(\ell, \hat y\)</span> are the previously defined square error loss and the OLS prediction respectively.
+We call this expression the <em>training error</em> and for a fixed <span class="math">\(\beta\)</span> this is an unbiased estimate for the risk of the linear predictor with that coefficient vector.
+Hence, minimizing the training error is a reasonable idea, since it seems to be a decent proxy for the risk of the predictor.
+It turns out that OLS regression, when viewed as a predictor, is the result of two decisions:</p>
+<ol class="arabic simple">
+<li>OLS gives a linear predictor, <span class="math">\(\hat y\)</span>,</li>
+<li>OLS minimizes the training error for square error loss.</li>
+</ol>
+<p>We are now ready to propose a general framework for thinking about problems like linear regression, from the prediction perspective.</p>
+<p>A <em>supervised learner</em> is any algorithm that takes p dimensional training data of the form</p>
+<div class="math">
+\[x_i \in \mathbb R^p, y_i \in \mathbb R, \quad i=1,\ldots,n\]</div>
+<p>and fits a predictor, which is a function that predicts <span class="math">\(Y\)</span> from a new datapoint, or a test point <span class="math">\(X = x\)</span>, which we denote <span class="math">\(\hat y(x)\)</span>.
+The corresponding random variables <span class="math">\(X,Y\)</span> are called the <em>predictor and response variables</em> respectively, and we will assume that the X variables are p dimensional.</p>
+<p>For example, we are a car insurance company and we want to predict how much a customer will cost our company in claims per year.
+Before a customer takes out a policy they fill out a form to obtain a quote for the cost of the policy (the premium).
+The quote form tells the company certain details about the customer, such as where they live, demographic information, and driver history.
+Nowadays, insurance companies also obtain the credit history of individuals which turns out the be a good predictor of insurance claims.
+Because this cost to a company is a continuous variable, this is an example of a <em>regression</em> problem, which is a class of supervised learning.</p>
+<p>As another example, the U.S. military monitors ocean shipping lanes for illicit trading, armed vessels, etc.
+Using satellite images, which you can encode as an X vector, they want to classify the type of vessel, which can be encoded as integers 0,1,2, etc.
+Because the response variable <span class="math">\(Y\)</span> is discrete in this case, we call this a <em>classification</em> problem, which is another class of supervised learning.
+In this example, U.S. contractors use sophisticated tools like convolutional neural networks to improve the military&#8217;s surveillance capabilities by building better classifiers.</p>
+<p>Supervised learning refers to the particular learning task at hand, and all sorts of heuristics can be proposed to solve the problem.
+For example, suppose that we want to predict if two people will become friends in a social network.
+A heuristic would be, predict that they will be friends if they have more than 5 friends in common.
+On the other hand, OLS is what we call an <em>empirical risk minimizer</em> (ERM) which just means that it minimizes the term (ER), which is often called the empirical risk.
+We could have selected a different form for the predictor <span class="math">\(\hat y\)</span> or for the loss function <span class="math">\(\ell\)</span> and obtained a different ERM.
+In this sense, ERM is not heuristics, but rather a principled ways to come up with new predictors.</p>
+<p>All of these supervised learners have been presented in what is known as <em>batch form</em>.
+Specifically, there is a single training and testing phase.
+An alternative to this is called <em>online learning</em> in which you observe a stream of X,Y data, and you have to predict each new example in sequence.
+For example, you are a website that serves free content, and you want to get people to donate to help you continue to produce that content.
+To do this you have a pop-up box that asks for a donation, and they have to decline or donate to move on to the content.
+Because this can be intrusive, you want to strategically ask for these donations, so you monitor someone&#8217;s session all the while extracting possible predictor variables.
+Then at a predetermined point, such as after scrolling through half of an article, you ask them for a donation if they seem likely to donate.
+This takes the form of the game theoretic interpretation discussed at the beginning of the chapter, but now it is sequential.
+Specifically, the website (player 1) and the user (player 2) do the following in sequence,</p>
+<ol class="arabic simple">
+<li>Player 2 (the user) shows the predictor variables (the session behavior of the user) to player 1;</li>
+<li>Player 1 (the website) then predicts the response variable (whether they donate or not), and then acts accordingly;</li>
+<li>Player 2 (the user) reveals the response variable;</li>
+<li>Player 1 then incurs some reward/loss;</li>
+<li>Repeat 1-4 for the next session.</li>
+</ol>
+<p>In this case, the loss is either the implicit loss of a user annoyed that you are asking them to donate, or the lost revenue from the missed possible donation.
+There are some interesting properties of this specific scenario, such as the specific choice of loss function, that make it a non-standard classification problem.
+Regardless, let&#8217;s consider the general problem of online classification, where we observe the predictor variable, then need to predict, then observe the response variable.</p>
+<div class="section" id="the-perceptron">
+<h3>The Perceptron<a class="headerlink" href="#the-perceptron" title="Permalink to this headline">¶</a></h3>
+<p>The perceptron <a class="reference internal" href="#ros58" id="id1">[ROS58]</a> is a simple algorithm that works surprisingly well.
+It is designed to solve online classification algorithms, where the response variable is -1 or 1 (we can choose these two numbers without loss of generality), which is called binary classification.
+In this context, the predictor either mis-classifies the response or not and we will be making predictions in an online fashion.
+To begin, let&#8217;s talk about the geometry of linear classifiers.</p>
+<p>A <em>linear classifier</em> is a binary classifier that takes the following form,</p>
+<div class="math">
+\[\begin{split}\hat y_i = \left\{ \begin{array}{ll}
+1,&amp; x_i^\top \beta \ge - \beta_0\\
+-1,&amp; x_i^\top \beta &lt; - \beta_0\\
+\end{array}\right.\end{split}\]</div>
+<p>What this means is that the classifier only needs to evaluate the linear score function, denoted by <span class="math">\(\hat s(x) = \beta_0 + \beta^\top x\)</span>, in order to make the prediction.
+We can visualize prediction with a linear classifier by drawing the line <span class="math">\(\hat s(x) = 0\)</span>, which we will call the separator line.</p>
+<img alt="../_images/perceptron.svg" src="../_images/perceptron.svg" /><p>The red line indicates the line along which <span class="math">\(s(x) = \beta_0 + \beta^\top x = 0\)</span>, above the line we are classifying the instance as <span class="math">\(\hat y_i = 1\)</span>, and below the line is <span class="math">\(\hat y_i = -1\)</span>.
+The black points are correctly classified and the red <span class="math">\(-1\)</span> is mis-classified.
+In online learning, we see the data in sequence and if we correctly classify each or not.
+A reasonable reaction to a mis-classification is to modify the <span class="math">\(\beta\)</span> to move the red separator line away from the mis-classified point.
+We do this by subtracting some of <span class="math">\(x_i\)</span> from <span class="math">\(\beta\)</span> if <span class="math">\(y_i = -1\)</span> and adding if <span class="math">\(y_i = 1\)</span>.
+Specifically, if datum i is mis-classified, then we make the updates</p>
+<div class="math">
+\[\begin{split}\begin{array}{c}
+\beta \gets \beta + \eta \, y_i x_i,\\
+\beta_0 \gets \beta_0 + \eta \, y_i.
+\end{array}\end{split}\]</div>
+<p>Because we are continually updating <span class="math">\(\beta\)</span> at each step we can evaluate the linear classifier, thus predicting the next response.
+We can use any online learner in the batch learning context by ignoring the intermediate predictions and just outputting the final predictor after all of the data has been seen.
+If each iteration takes a small amount of compute time to make the update, i.e. <span class="math">\(O(1)\)</span> time, then this means that the final predictor will take <span class="math">\(O(n)\)</span> time to compute.
+Sometimes, when we refer to online learning we just mean a learning machine that takes linear time by iterating through each datum in sequence.
+You can also use batch learning to make an online learner by simply re-training a batch learner with the previous <span class="math">\(i-1\)</span> points at the ith time point.
+This would take much more compute time however (at least <span class="math">\(O(n^2)\)</span> time), and this does not normally qualify as an online learner.
+We will implement the perceptron, but first let&#8217;s think about how to simulate data for which a linear classifier would be a good idea.</p>
+</div>
+<div class="section" id="simulation-in-numpy">
+<h3>Simulation in Numpy<a class="headerlink" href="#simulation-in-numpy" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal"><span class="pre">random</span></code> module in Numpy has many random number generators.
+For sample random data we have random samples from the uniform (<code class="docutils literal"><span class="pre">rand,</span> <span class="pre">uniform</span></code>), normal distribution (<code class="docutils literal"><span class="pre">randn,</span> <span class="pre">normal</span></code>), binomial (<code class="docutils literal"><span class="pre">binomial</span></code>), and other common distributions.
+There are also methods for sampling from or permuting a dataset: <code class="docutils literal"><span class="pre">sample</span></code> samples from a dataset with or without replacement, <code class="docutils literal"><span class="pre">permutation</span></code> returns a random permutation of the dataset, and <code class="docutils literal"><span class="pre">shuffle</span></code> shuffles the contents of a sequence.
+To see the details of these methods look at <a class="reference external" href="https://docs.scipy.org/doc/numpy-1.14.0/reference/routines.random.html">this documentation on SciPy.org</a> .</p>
+<p>Let&#8217;s begin by creating an n by 2 random X array.
+Most of the distributions in <code class="docutils literal"><span class="pre">np.random</span></code> can take array arguments and also the desired shape of the resulting array.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,(</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">])</span>
+<span class="n">beta_zero</span> <span class="o">=</span> <span class="mf">4.</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">sim_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">beta_zero</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above each X variable was drawn from uniform(0,1) random variables, while <span class="math">\(\beta, \beta_0\)</span> were chosen arbitrarily.
+We use the following function to simulate the Y variable.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sim_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">beta_zero</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simulate y from X and beta&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">beta_zero</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">s</span><span class="p">))</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">Y</span>
+</pre></div>
+</div>
+<p>We calculate the linear score, and then use the sigmoid function to turn this into a valid probability.
+We then pass this n dimensional array to  <code class="docutils literal"><span class="pre">random.binomial</span></code> which returns an n dimensional array itself.
+Recall that we want the response to be +1 or -1 so we multiply by 2 and subtract by 1.
+You might notice that this simulation is a draw from a logistic regression model.</p>
+</div>
+<div class="section" id="creating-the-perceptron-class">
+<h3>Creating the Perceptron class<a class="headerlink" href="#creating-the-perceptron-class" title="Permalink to this headline">¶</a></h3>
+<p>Most learning machines like the perceptron have internal states that we update and want to retain.
+For this reason, we want to create a class for the perceptron that caches the current <span class="math">\(\beta, \beta_0\)</span> and provides a simple interface for updating these parameters.
+We have already seen the use of instance methods, for example, <code class="docutils literal"><span class="pre">fileobject.readline()</span></code> when <code class="docutils literal"><span class="pre">fileobject</span></code> is the result of the <code class="docutils literal"><span class="pre">open``function.</span>
+<span class="pre">This</span> <span class="pre">is</span> <span class="pre">an</span> <span class="pre">example</span> <span class="pre">of</span> <span class="pre">object</span> <span class="pre">oriented</span> <span class="pre">programming,</span> <span class="pre">where</span> <span class="pre">we</span> <span class="pre">organize</span> <span class="pre">our</span> <span class="pre">code</span> <span class="pre">around</span> <span class="pre">the</span> <span class="pre">object,</span> <span class="pre">such</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">File</span> <span class="pre">object</span> <span class="pre">or</span> <span class="pre">the</span> <span class="pre">perceptron.</span>
+<span class="pre">Below</span> <span class="pre">is</span> <span class="pre">the</span> <span class="pre">``Perceptron</span></code> class and how it is initialized, which is specified in the <code class="docutils literal"><span class="pre">__init__</span></code> method.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Perceptron</span><span class="p">:</span>
+   <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">   Rosenblatt&#39;s perceptron, online learner</span>
+
+<span class="sd">   Attributes:</span>
+<span class="sd">       eta: learning rate</span>
+<span class="sd">       beta: coefficient vector</span>
+<span class="sd">       p: dimension of X</span>
+<span class="sd">       beta_zero: intercept</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">eta</span><span class="p">,</span><span class="n">dim</span><span class="p">,</span>
+                <span class="n">beta_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">beta_zero_init</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+       <span class="sd">&quot;&quot;&quot;initialize and set beta&quot;&quot;&quot;</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
+       <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">dim</span>
+       <span class="k">if</span> <span class="n">beta_init</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta_init</span>
+       <span class="k">else</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+       <span class="k">if</span> <span class="n">beta_zero_init</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">=</span> <span class="n">beta_zero_init</span>
+       <span class="k">else</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">=</span> <span class="mf">0.</span>
+   <span class="o">...</span>
+</pre></div>
+</div>
+<p>All instance methods need to start with the <code class="docutils literal"><span class="pre">self</span></code> argument.
+Now that we have written this class, we can make an instance of the perceptron.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perc</span> <span class="o">=</span> <span class="n">Perceptron</span><span class="p">(</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This implicitely calls <code class="docutils literal"><span class="pre">__init__</span></code> so it will create the attributes <code class="docutils literal"><span class="pre">eta,</span> <span class="pre">p,</span> <span class="pre">beta,</span> <span class="pre">beta_zero</span></code>.
+We choose <code class="docutils literal"><span class="pre">eta</span> <span class="pre">=</span> <span class="pre">.1</span></code> in this case somewhat arbitrarily.
+We need a way to update the perceptron, and use it to predict a new Y variable.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Perceptron</span><span class="p">:</span>
+   <span class="o">...</span>
+
+   <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+       <span class="sd">&quot;&quot;&quot;predict y with x&quot;&quot;&quot;</span>
+       <span class="n">s</span> <span class="o">=</span> <span class="n">x</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span>
+       <span class="n">yhat</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+       <span class="k">return</span> <span class="n">yhat</span>
+
+   <span class="k">def</span> <span class="nf">update_beta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+       <span class="sd">&quot;&quot;&quot;single step update output 0/1 loss&quot;&quot;&quot;</span>
+       <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+       <span class="k">if</span> <span class="n">yhat</span> <span class="o">!=</span> <span class="n">y</span><span class="p">:</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">x</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">y</span>
+       <span class="k">return</span> <span class="n">yhat</span> <span class="o">!=</span> <span class="n">y</span>
+</pre></div>
+</div>
+<p>These methods are what we use to update the coefficients, which we do on a mis-classification.
+Try to parse what is happening above, it is a straightforward application of our description of the perceptron.
+We can finally iterate through the dataset, feeding it to the perceptron, and storing the losses:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">t_iter</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="c1"># Iterate through the data, updating perceptron                                                                                           for t,(x,y) in enumerate(zip(X,Y)):</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perc</span><span class="o">.</span><span class="n">update_beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Notice the use of <code class="docutils literal"><span class="pre">zip</span></code>, which is an iterator tool that will zip up two iterables and yield a pair of each in sequence (I need to use <code class="docutils literal"><span class="pre">t</span></code> for plotting so I combine this with <code class="docutils literal"><span class="pre">enumerate</span></code>).
+We can see the result of these updates after <code class="docutils literal"><span class="pre">t=40,80,120,160,200</span></code> iterations below (+ are the response of +1 and - are -1).</p>
+<img alt="../_images/perc_0.png" src="../_images/perc_0.png" />
+<p><strong>The state of the perceptron with current separator line in red after 40 samples</strong></p>
+<img alt="../_images/perc_1.png" src="../_images/perc_1.png" />
+<p><strong>The state of the perceptron with current separator line in red after 80 samples</strong></p>
+<img alt="../_images/perc_2.png" src="../_images/perc_2.png" />
+<p><strong>The state of the perceptron with current separator line in red after 120 samples</strong></p>
+<img alt="../_images/perc_3.png" src="../_images/perc_3.png" />
+<p><strong>The state of the perceptron with current separator line in red after 160 samples</strong></p>
+<img alt="../_images/perc_4.png" src="../_images/perc_4.png" />
+<p><strong>The state of the perceptron with current separator line in red after 200 samples</strong></p>
+<p>As we can see the perceptron hones in on a reasonable separator line.
+This behavior, that the perceptron tends to converge on a good solution, was by no means obvious.
+It turns out that the perceptron is a special case of an online learning technique called stochastic gradient descent.
+We will not return to stochastic gradient descent until Unit 3.
+The following is the full source code for the module.
+Notice that the main instructions begin with the line</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>which means that the following block will be executed if you call the script with <code class="docutils literal"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">perceptron.py</span></code> or in ipython with <code class="docutils literal"><span class="pre">%run</span> <span class="pre">pperceptron.py</span></code>.
+Alternatively, you could import the module with <code class="docutils literal"><span class="pre">import</span> <span class="pre">perceptron</span></code> and have access to the Perceptron class with <code class="docutils literal"><span class="pre">perceptron.Perceptron</span></code> and the main code block will not be run.
+This is the preferred way to write modules.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="k">def</span> <span class="nf">sim_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">beta_zero</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simulate y from X and beta&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">beta_zero</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">s</span><span class="p">))</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">Y</span>
+
+<span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">beta_zero</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot the 2-dim data with separator line&quot;&quot;&quot;</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">Y</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">Y</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;$+$&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">Y</span><span class="o">==-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">Y</span><span class="o">==-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">marker</span><span class="o">=</span><span class="s1">&#39;$-$&#39;</span><span class="p">)</span>
+    <span class="n">ybds</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">beta_zero</span> <span class="o">/</span> <span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
+            <span class="o">-</span><span class="p">(</span><span class="n">beta_zero</span> <span class="o">+</span> <span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">ybds</span><span class="p">,</span><span class="s1">&#39;r-&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Perceptron</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rosenblatt&#39;s perceptron, online learner</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        eta: learning rate</span>
+<span class="sd">        beta: coefficient vector</span>
+<span class="sd">        p: dimension of X</span>
+<span class="sd">        beta_zero: intercept</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">eta</span><span class="p">,</span><span class="n">dim</span><span class="p">,</span>
+                 <span class="n">beta_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">beta_zero_init</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialize and set beta&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="k">if</span> <span class="n">beta_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta_init</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">beta_zero_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">=</span> <span class="n">beta_zero_init</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">=</span> <span class="mf">0.</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;predict y with x&quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">x</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span>
+        <span class="n">yhat</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">yhat</span>
+
+    <span class="k">def</span> <span class="nf">update_beta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;single step update output 0/1 loss&quot;&quot;&quot;</span>
+        <span class="n">yhat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">yhat</span> <span class="o">!=</span> <span class="n">y</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta_zero</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">*</span> <span class="n">y</span> 
+        <span class="k">return</span> <span class="n">yhat</span> <span class="o">!=</span> <span class="n">y</span>
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># Initialize data, beta, simulate y</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">200</span> 
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span><span class="o">-</span><span class="mi">10</span><span class="p">])</span>
+    <span class="n">beta_zero</span> <span class="o">=</span> <span class="o">-</span> <span class="mf">4.</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">sim_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">beta_zero</span><span class="p">)</span>
+    <span class="c1"># Initialize perceptron</span>
+    <span class="n">perc</span> <span class="o">=</span> <span class="n">Perceptron</span><span class="p">(</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">t_iter</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="c1"># Iterate through the data, updating perceptron</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)):</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perc</span><span class="o">.</span><span class="n">update_beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">t_iter</span> <span class="o">==</span> <span class="n">t_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Every t_iter plot</span>
+            <span class="n">plot_data</span><span class="p">(</span><span class="n">X</span><span class="p">[:</span><span class="n">t</span><span class="p">,:],</span><span class="n">Y</span><span class="p">[:</span><span class="n">t</span><span class="p">],</span><span class="n">perc</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span><span class="n">perc</span><span class="o">.</span><span class="n">beta_zero</span><span class="p">,</span>
+                      <span class="s2">&quot;../images/perc_</span><span class="si">{}</span><span class="s2">.png&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="o">//</span><span class="n">t_iter</span><span class="p">))</span>
+</pre></div>
+</div>
+<table class="docutils citation" frame="void" id="ros58" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[ROS58]</a></td><td>Rosenblatt, Frank. &#8220;The perceptron: a probabilistic model for information storage and organization in the brain.&#8221; Psychological review 65.6 (1958): 386.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Statistical Learning Machines</a><ul>
+<li><a class="reference internal" href="#the-prediction-perspective">The Prediction Perspective</a><ul>
+<li><a class="reference internal" href="#effects-on-wine-quality-with-ols">Effects on wine quality with OLS</a></li>
+<li><a class="reference internal" href="#prediction-loss-and-testing">Prediction, loss, and testing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#numpy-and-vectorization">Numpy and Vectorization</a><ul>
+<li><a class="reference internal" href="#matrix-operations">Matrix operations</a></li>
+<li><a class="reference internal" href="#array-broadcasting">Array Broadcasting</a></li>
+<li><a class="reference internal" href="#matrix-slicing-views-and-copies">Matrix Slicing, Views, and Copies</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#supervised-learning">Supervised Learning</a><ul>
+<li><a class="reference internal" href="#the-perceptron">The Perceptron</a></li>
+<li><a class="reference internal" href="#simulation-in-numpy">Simulation in Numpy</a></li>
+<li><a class="reference internal" href="#creating-the-perceptron-class">Creating the Perceptron class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="data.html" title="previous chapter">Data and Computation</a></li>
+      <li>Next: <a href="wrangling.html" title="next chapter">Data Wrangling</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/unit1/learning.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, James Sharpnack.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/unit1/learning.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

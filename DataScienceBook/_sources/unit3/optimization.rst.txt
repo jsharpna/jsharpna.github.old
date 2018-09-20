@@ -1,0 +1,7 @@
+Optimization for Machine Learning
+=====================================
+
+- taxonomy of optimization
+- gradients, subgradients
+- stochastic optimization
+- online methods

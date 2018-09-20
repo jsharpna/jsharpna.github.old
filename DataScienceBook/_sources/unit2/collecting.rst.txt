@@ -1,0 +1,7 @@
+Collecting and Managing Data
+==============================
+
+- RDBMSs
+- sql
+- webdata, apis, request
+

@@ -1,0 +1,8 @@
+Network and Relational Data
+============================
+
+- kernels here?
+- network features
+- signal processing on graphs
+- network visualization
+- latent networks, glasso

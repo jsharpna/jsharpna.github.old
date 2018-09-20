@@ -1,0 +1,7 @@
+Interactive Visualization
+=============================
+
+- Principles of Interactive Vis
+- Plotly, Bokeh
+- SVG, D3?
+- GIS?

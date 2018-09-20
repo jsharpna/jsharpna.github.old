@@ -1,0 +1,8 @@
+Factor Models and Eigensystems
+===============================
+
+- spectral decomposition and PCA
+- Linear systems and solvers
+- scipy, sparse
+- kernels? 
+- recommendation systems? matrix factorization? 
