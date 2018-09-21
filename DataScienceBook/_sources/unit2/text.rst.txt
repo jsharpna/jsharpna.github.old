@@ -1,6 +1,0 @@
-Structured Text Data
-=====================
-
-- NLP, bag-of-words models
-- Strings and regex
-- XML/HTML

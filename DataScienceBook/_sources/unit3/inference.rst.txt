@@ -1,7 +1,0 @@
-Statistical Inference
-=========================
-
-- confidence intervals, statsmodels
-- model selection
-- bootstrap
-- density estimation? information theory?

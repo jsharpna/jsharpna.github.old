@@ -1,9 +1,0 @@
-Classification 
-================
-
-- evaluating classifiers and bias-variance tradeoff
-- surrogate loss
-- sklearn
-- modern classifiers: kNN, logistic regression, SVMs, random forests, neural nets
-
-

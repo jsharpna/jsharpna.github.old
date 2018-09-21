@@ -1,7 +1,0 @@
-Data Visualization
-===================
-
-- principles of data vis
-- grammar of graphics basics
-- ggplot, matplotlib
-

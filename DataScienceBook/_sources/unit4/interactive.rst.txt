@@ -1,6 +1,0 @@
-Interactive Machine Learning
-===============================
-
-- A/B testing
-- Bandit algorithms
-- Reinforcement learning
